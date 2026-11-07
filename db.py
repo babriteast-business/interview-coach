@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS code_runs(
 CREATE TABLE IF NOT EXISTS threads(id {ID}, user_id INTEGER, title TEXT, created {TS});
 CREATE TABLE IF NOT EXISTS messages(id {ID}, thread_id INTEGER, role TEXT, content TEXT, created {TS});
 CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY, value TEXT);
+CREATE TABLE IF NOT EXISTS bank(id TEXT PRIMARY KEY, data TEXT, added {TS});
 CREATE TABLE IF NOT EXISTS ai_usage(user_id INTEGER, day TEXT, n INTEGER, PRIMARY KEY(user_id, day));
 """
 # columns added after v1 (for existing local databases)

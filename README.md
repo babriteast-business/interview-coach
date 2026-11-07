@@ -63,7 +63,9 @@ Render → your service → **Environment** → edit `ADMIN_PASSWORD` → **Save
 ---
 
 ## Refresh the question bank from the internet
-Run this on your PC, then push. The site picks it up on redeploy.
+**On the website (easiest):** Admin → **Refresh from internet**. It pulls the public question lists and asks the AI for this year's most-asked questions per topic, saved in your database. The site also pulls the public lists by itself once a week.
+
+**Or on your PC**, then push:
 ```powershell
 cd C:\Users\god\interview-coach
 python -m venv .venv
@@ -72,6 +74,13 @@ python -m venv .venv
 .\.venv\Scripts\python.exe refresh_questions.py --trending 5 # + AI-picked trending questions (needs .env key)
 git add data\questions.json; git commit -m "refresh questions"; git push
 ```
+
+## Import your question guides (one time, after the first deploy)
+Admin → **Import questions** → choose the PDF → **Import questions**. Do it once per guide:
+- `agentic-ai-interview-questions.pdf`: 223 questions with levels and answer points
+- `7_AI_Design_Patterns_Interview_Guide.pdf`: 7 system-design scenarios with what the interviewer is testing
+
+They go into your private database (Neon), so they survive redeploys. PDFs are kept out of GitHub by `.gitignore`.
 
 ## Run on your PC instead (optional)
 ```powershell

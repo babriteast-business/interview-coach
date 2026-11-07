@@ -6,6 +6,7 @@ import json
 import os
 import random
 import re
+import threading
 import time
 
 from dotenv import load_dotenv
@@ -14,7 +15,7 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(BASE, ".env"))
 
 import uvicorn  # noqa: E402
-from fastapi import Depends, FastAPI, HTTPException, Request, Response  # noqa: E402
+from fastapi import Depends, FastAPI, File, HTTPException, Request, Response, UploadFile  # noqa: E402
 from fastapi.responses import FileResponse, PlainTextResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
@@ -45,8 +46,63 @@ def load_json(name, default):
         return json.load(f)
 
 
+_bank_cache = {"at": 0, "items": []}
+
+
 def questions():
-    return load_json("questions.json", [])
+    """Shipped bank (data/questions.json) + questions refreshed live into the database."""
+    if time.time() - _bank_cache["at"] > 60:
+        items = load_json("questions.json", [])
+        seen = {q["id"] for q in items}
+        try:
+            with db.conn() as c:
+                for r in c.execute("SELECT data FROM bank ORDER BY added"):
+                    q = json.loads(r["data"])
+                    if q["id"] not in seen:
+                        seen.add(q["id"])
+                        items.append(q)
+        except Exception:
+            pass
+        _bank_cache.update(at=time.time(), items=items)
+    return _bank_cache["items"]
+
+
+def refresh_bank(trending_per_cat=0):
+    """Pull new questions from the internet (+ optional AI trending set) into the database."""
+    import refresh_questions as rq
+    db.set_setting("refresh_status", "running")
+    try:
+        _bank_cache["at"] = 0
+        base = list(questions())
+        work = list(base)
+        rq.fetch_sources(work)
+        if trending_per_cat:
+            rq.trending(work, trending_per_cat)
+        new = work[len(base):]
+        with db.conn() as c:
+            for q in new:
+                c.execute("INSERT INTO bank(id,data,added) VALUES(?,?,?) ON CONFLICT(id) DO NOTHING",
+                          (q["id"], json.dumps(q, ensure_ascii=False), time.time()))
+        db.set_setting("bank_refreshed", datetime.datetime.now().strftime("%d %b %Y, %H:%M"))
+        db.set_setting("refresh_status", f"done: {len(new)} new questions")
+    except Exception as e:
+        db.set_setting("refresh_status", f"failed: {e}"[:300])
+    finally:
+        _bank_cache["at"] = 0
+
+
+def _auto_refresh():
+    """Once a week, on start-up, fetch the public question lists (free, no AI calls)."""
+    try:
+        last = float(db.get_setting("bank_refreshed_ts", "0"))
+        if time.time() - last > 7 * 86400:
+            db.set_setting("bank_refreshed_ts", str(time.time()))
+            refresh_bank(0)
+    except Exception:
+        pass
+
+
+threading.Thread(target=_auto_refresh, daemon=True).start()
 
 
 def problems():
@@ -219,6 +275,56 @@ def admin_user_action(uid: int, body: UserAction, a=Depends(admin_user)):
     return {"ok": True}
 
 
+class RefreshIn(BaseModel):
+    trending: int = 4
+
+
+@app.post("/api/admin/refresh")
+def admin_refresh(r: RefreshIn, a=Depends(admin_user)):
+    started = float(db.get_setting("bank_refreshed_ts", "0"))
+    if db.get_setting("refresh_status") == "running" and time.time() - started < 600:
+        return {"status": "running"}
+    db.set_setting("bank_refreshed_ts", str(time.time()))
+    threading.Thread(target=refresh_bank, args=(max(0, min(r.trending, 10)),), daemon=True).start()
+    return {"status": "running"}
+
+
+@app.get("/api/admin/refresh")
+def admin_refresh_status(a=Depends(admin_user)):
+    qs = questions()
+    return {"status": db.get_setting("refresh_status", "never run"), "last": db.get_setting("bank_refreshed"),
+            "total": len(qs), "trending": sum(1 for q in qs if q.get("recent"))}
+
+
+@app.post("/api/admin/import")
+async def admin_import(file: UploadFile = File(...), a=Depends(admin_user)):
+    """Import questions from a PDF/markdown/text file you own into your private bank (database only)."""
+    import importer
+    data = await file.read()
+    if len(data) > 15 * 1024 * 1024:
+        raise HTTPException(400, "That file is over 15 MB.")
+    name = (file.filename or "upload").rsplit("/", 1)[-1][:80]
+    try:
+        text = importer.pdf_text(data) if name.lower().endswith(".pdf") else data.decode("utf-8", "ignore")
+    except Exception:
+        raise HTTPException(400, "Couldn't read that file. Upload a text-based PDF, .md or .txt.")
+    qs = importer.parse(text, source=f"import: {name}")
+    if not qs:
+        raise HTTPException(400, "No questions found in that file.")
+    added = 0
+    with db.conn() as c:
+        for q in qs:
+            if c.execute("SELECT 1 FROM bank WHERE id=?", (q["id"],)).fetchone():
+                continue
+            c.execute("INSERT INTO bank(id,data,added) VALUES(?,?,?)", (q["id"], json.dumps(q, ensure_ascii=False), time.time()))
+            added += 1
+    _bank_cache["at"] = 0
+    cats = {}
+    for q in qs:
+        cats[q["category"]] = cats.get(q["category"], 0) + 1
+    return {"found": len(qs), "added": added, "categories": cats}
+
+
 class SettingsIn(BaseModel):
     registration_open: bool
     ai_daily_limit: int
@@ -269,7 +375,7 @@ def meta(u=Depends(current_user)):
             "ai_used_today": used, "ai_limit": None if u["role"] == "admin" else ai_limit(),
             "mock": llm.MOCK, "key_set": bool(llm.API_KEY), "models": os.getenv("MODELS", "openrouter/free,auto"),
             "last_model": llm.last_model_used["id"],
-            "bank_updated": load_json("bank_meta.json", {}).get("updated")}
+            "bank_updated": db.get_setting("bank_refreshed") or load_json("bank_meta.json", {}).get("updated")}
 
 
 # ---------------- interview ----------------
@@ -409,12 +515,16 @@ def iv_answer(iid: int, a: AnswerIn, u=Depends(current_user)):
         raise HTTPException(404, "Question not found")
     if not a.answer.strip():
         raise HTTPException(400, "Type or speak an answer first (or press Skip).")
+    with db.conn() as c:
+        prev = c.execute("SELECT is_followup FROM turns WHERE interview_id=? AND id<? ORDER BY id DESC LIMIT 1",
+                         (iid, a.turn_id)).fetchone()
+    depth = (1 if t["is_followup"] else 0) + (1 if t["is_followup"] and prev and prev["is_followup"] else 0)
     ai_guard(u)
     try:
         fb = llm.chat_json([
             {"role": "system", "content": prompts.GRADE.format(
                 track=TRACKS.get(iv["track"], iv["track"]), profile=get_profile(uid),
-                difficulty=iv["difficulty"], category=t["category"],
+                difficulty=iv["difficulty"], category=t["category"], depth=depth,
                 key_points="; ".join(json.loads(t["key_points"] or "[]")) or "(use your judgement)")},
             {"role": "user", "content": f"QUESTION: {t['question']}\n\nCANDIDATE ANSWER:\n{a.answer}"}],
             temperature=0.2)
@@ -425,6 +535,8 @@ def iv_answer(iid: int, a: AnswerIn, u=Depends(current_user)):
     except Exception:
         score = 0
     fb["score"] = score
+    if depth >= 2:
+        fb["follow_up"] = None          # real panels move on after two follow-ups
     fb["key_points"] = json.loads(t["key_points"] or "[]")
     fb["model_used"] = llm.last_model_used["id"]
     with db.conn() as c:
@@ -549,7 +661,21 @@ def stats(u=Depends(current_user)):
                           (uid, time.time() - 7 * 86400)).fetchone()
         code = c.execute("SELECT COUNT(DISTINCT problem_id) n FROM code_runs WHERE user_id=? AND passed=total",
                          (uid,)).fetchone()
+    with db.conn() as c:
+        times = [r["answered"] for r in c.execute(
+            "SELECT answered FROM turns WHERE user_id=? AND answered IS NOT NULL AND answered > ?",
+            (uid, time.time() - 400 * 86400))]
+        best = c.execute("SELECT MAX(score) AS m FROM turns WHERE user_id=? AND answered IS NOT NULL",
+                         (uid,)).fetchone()["m"]
+    days = {datetime.date.fromtimestamp(t) for t in times}
+    today = datetime.date.today()
+    streak, d = 0, today if today in days else today - datetime.timedelta(days=1)
+    while d in days:
+        streak += 1
+        d -= datetime.timedelta(days=1)
+    today_n = sum(1 for t in times if datetime.date.fromtimestamp(t) == today)
     return {"by_category": cats, "answered": tot["n"], "average": tot["avg"], "avg_7d": last7["avg"],
+            "streak": streak, "today": today_n, "daily_goal": 5, "best": best,
             "coding_solved": code["n"], "coding_total": len(problems())}
 
 

@@ -8,6 +8,7 @@ Sources live in data/sources.json - add any raw markdown URL with questions in i
 """
 import argparse
 import datetime
+import hashlib
 import json
 import os
 import re
@@ -45,6 +46,10 @@ def norm(s):
     return re.sub(r"[^a-z0-9 ]", "", s.lower()).strip()
 
 
+def qid(prefix, q):
+    return f"{prefix}-{hashlib.md5(norm(q).encode()).hexdigest()[:10]}"
+
+
 def extract(text):
     out = []
     for line in text.splitlines():
@@ -65,7 +70,8 @@ def fetch_sources(bank):
     added = 0
     for src in sources:
         try:
-            r = httpx.get(src["url"], timeout=30, follow_redirects=True)
+            r = httpx.get(src["url"], timeout=30, follow_redirects=True,
+                          headers={"User-Agent": "interview-coach-refresh"})
             r.raise_for_status()
         except Exception as e:
             print(f"  ! {src['name']}: {e}")
@@ -76,7 +82,7 @@ def fetch_sources(bank):
             if not cat or norm(q) in seen:
                 continue
             seen.add(norm(q))
-            bank.append({"id": f"web-{len(bank) + 1:04d}", "category": cat, "difficulty": "medium",
+            bank.append({"id": qid("web", q), "category": cat, "difficulty": "medium",
                          "tracks": ["engineer", "architect"], "recent": False, "q": q,
                          "key_points": [], "source": src["name"]})
             n += 1
@@ -109,7 +115,7 @@ def trending(bank, per_cat):
             if len(q) < 15 or norm(q) in seen:
                 continue
             seen.add(norm(q))
-            bank.append({"id": f"trend-{len(bank) + 1:04d}", "category": cat,
+            bank.append({"id": qid("trend", q), "category": cat,
                          "difficulty": item.get("difficulty", "medium"), "tracks": ["engineer", "architect"],
                          "recent": True, "q": q, "key_points": item.get("key_points", []),
                          "source": f"trending-{datetime.date.today().isoformat()}"})

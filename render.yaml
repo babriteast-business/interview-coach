@@ -11,6 +11,8 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.7
+      - key: TZ
+        value: Asia/Kolkata
       - key: OPENROUTER_BASE_URL
         value: https://openrouter.ai/api/v1
       - key: MODELS
