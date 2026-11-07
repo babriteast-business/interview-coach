@@ -1,0 +1,3831 @@
+[
+ {
+  "id": "li-001",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Explain how a transformer's self-attention works, and why it scales quadratically with sequence length.",
+  "key_points": [
+   "Q, K, V projections",
+   "softmax(QK^T/sqrt(d))V",
+   "multi-head attention",
+   "n x n attention matrix -> O(n^2) compute/memory",
+   "mitigations: FlashAttention, sliding window, sparse/linear attention"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "li-002",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "What is the KV cache, why does it matter for inference, and how do you manage its memory cost?",
+  "key_points": [
+   "caches keys/values of past tokens to avoid recompute",
+   "memory grows with batch x seq len x layers x heads",
+   "PagedAttention / vLLM",
+   "GQA/MQA reduce KV size",
+   "KV quantization, prefix caching"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "li-003",
+  "category": "LLM internals",
+  "difficulty": "easy",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is tokenization? Why do token counts matter for cost, latency and model behaviour?",
+  "key_points": [
+   "BPE / SentencePiece subwords",
+   "pricing and context limits are per token",
+   "non-English and code use more tokens",
+   "tokenization quirks cause arithmetic/spelling errors"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "li-004",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Explain temperature, top-p and top-k sampling. Which settings would you use for a data-extraction task vs creative writing?",
+  "key_points": [
+   "temperature scales logits",
+   "top-k fixed candidate set, top-p nucleus by cumulative prob",
+   "extraction: low temp ~0, structured outputs",
+   "creative: higher temp/top-p",
+   "determinism is still not guaranteed"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "li-005",
+  "category": "LLM internals",
+  "difficulty": "hard",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "How do reasoning models (thinking / chain-of-thought models) differ from standard LLMs, and when are they worth the extra cost and latency?",
+  "key_points": [
+   "trained with RL to produce long reasoning before answering",
+   "test-time compute scaling",
+   "better at math, code, multi-step planning",
+   "higher latency and token cost",
+   "route: cheap model for simple, reasoning model for hard; reasoning budget controls"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "li-006",
+  "category": "LLM internals",
+  "difficulty": "hard",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "Explain speculative decoding and other techniques to reduce LLM inference latency.",
+  "key_points": [
+   "small draft model proposes tokens, large model verifies in parallel",
+   "output distribution preserved",
+   "continuous batching",
+   "quantization (INT8/INT4, AWQ, GPTQ)",
+   "prompt/prefix caching, streaming, smaller models"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "li-007",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What causes hallucinations in LLMs and what are the practical ways to reduce them?",
+  "key_points": [
+   "next-token prediction optimizes plausibility not truth",
+   "knowledge gaps / outdated training data",
+   "grounding with RAG + citations",
+   "constrained output, ask to abstain when unsure",
+   "evals and verification step / LLM-as-judge"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "li-008",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Compare encoder-only, decoder-only and encoder-decoder models. Give a use case for each.",
+  "key_points": [
+   "encoder-only (BERT): classification, embeddings",
+   "decoder-only (GPT, Llama): generation",
+   "encoder-decoder (T5): translation, summarization",
+   "bidirectional vs causal attention"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "li-009",
+  "category": "LLM internals",
+  "difficulty": "hard",
+  "tracks": [
+   "architect"
+  ],
+  "recent": true,
+  "q": "What is a Mixture-of-Experts model, and what are its trade-offs for serving in production?",
+  "key_points": [
+   "router activates top-k experts per token",
+   "more parameters at similar compute per token",
+   "high memory: all experts must be loaded",
+   "load balancing, expert parallelism",
+   "examples: Mixtral, DeepSeek, Qwen MoE"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "li-010",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "How do long context windows (1M tokens) change system design? Does long context make RAG obsolete?",
+  "key_points": [
+   "lost-in-the-middle / recall degrades",
+   "cost and latency scale with input tokens",
+   "RAG still cheaper, fresher, permissioned, citable",
+   "hybrid: retrieve then use long context",
+   "prompt caching for repeated large context"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "li-011",
+  "category": "LLM internals",
+  "difficulty": "easy",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are embeddings and how are they used in GenAI applications?",
+  "key_points": [
+   "dense vectors capturing semantic meaning",
+   "cosine similarity",
+   "semantic search, RAG, clustering, dedup, recommendations",
+   "embedding model choice and dimension trade-offs"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "li-012",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "What is structured output / JSON mode, and how do you guarantee an LLM returns valid, schema-conforming JSON?",
+  "key_points": [
+   "JSON schema / constrained decoding",
+   "provider structured outputs or tool calling",
+   "validate with Pydantic",
+   "retry/repair loop",
+   "keep schema simple, low temperature"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "r-001",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Walk me through the architecture of a production RAG system end to end.",
+  "key_points": [
+   "ingestion: parse, clean, chunk, embed, store with metadata",
+   "retrieval: hybrid search + filters",
+   "re-ranking",
+   "prompt assembly with citations",
+   "generation + guardrails",
+   "evaluation and monitoring, re-indexing pipeline"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "r-002",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How do you choose a chunking strategy? What chunk size and overlap would you start with and why?",
+  "key_points": [
+   "fixed vs recursive vs semantic vs document-structure-aware",
+   "typical start 300-800 tokens, 10-20% overlap",
+   "keep tables/headings intact",
+   "parent-child / small-to-big retrieval",
+   "tune with retrieval evals, not guesswork"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "r-003",
+  "category": "RAG",
+  "difficulty": "hard",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "Your RAG system gives wrong answers even though the right document exists in the index. How do you debug it?",
+  "key_points": [
+   "separate retrieval vs generation failure",
+   "check recall@k on golden set",
+   "inspect chunks: split badly? metadata missing?",
+   "query rewriting / HyDE / multi-query",
+   "add hybrid BM25 + reranker",
+   "check prompt: context ignored, conflicting chunks"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "r-004",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "What is hybrid search and why use a re-ranker?",
+  "key_points": [
+   "BM25 keyword + dense vector",
+   "reciprocal rank fusion",
+   "cross-encoder reranker scores query-doc pairs",
+   "improves precision at top-k",
+   "latency cost of reranking"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "r-005",
+  "category": "RAG",
+  "difficulty": "hard",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "How do you evaluate a RAG system? Which metrics do you track?",
+  "key_points": [
+   "retrieval: recall@k, precision@k, MRR, nDCG",
+   "generation: faithfulness/groundedness, answer relevance, correctness",
+   "golden Q&A dataset",
+   "RAGAS / LLM-as-judge with human calibration",
+   "online: thumbs up/down, citation clicks"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "r-006",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Compare vector databases (pgvector, Pinecone, Qdrant, Weaviate, Chroma, FAISS). How would you choose?",
+  "key_points": [
+   "scale and latency needs",
+   "managed vs self-hosted",
+   "metadata filtering, hybrid search support",
+   "existing stack (Postgres -> pgvector)",
+   "cost, multi-tenancy, ops burden",
+   "HNSW vs IVF indexes"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "r-007",
+  "category": "RAG",
+  "difficulty": "hard",
+  "tracks": [
+   "architect"
+  ],
+  "recent": true,
+  "q": "What is GraphRAG / knowledge-graph RAG and when would you use it over plain vector RAG?",
+  "key_points": [
+   "entities and relationships extracted into a graph",
+   "multi-hop and global summary questions",
+   "community summaries",
+   "higher build cost",
+   "use when relationships matter (legal, finance, org data)"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "r-008",
+  "category": "RAG",
+  "difficulty": "hard",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "What is agentic RAG and how does it differ from a single-shot RAG pipeline?",
+  "key_points": [
+   "agent decides when/what to retrieve",
+   "query decomposition, iterative retrieval",
+   "tool use across multiple sources",
+   "self-reflection / corrective RAG",
+   "more latency/cost, needs step limits and evals"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "r-009",
+  "category": "RAG",
+  "difficulty": "hard",
+  "tracks": [
+   "architect"
+  ],
+  "recent": false,
+  "q": "How do you handle access control and multi-tenancy in a RAG system over company documents?",
+  "key_points": [
+   "permission metadata on chunks",
+   "filter at retrieval time by user's ACL",
+   "never rely on the LLM to hide data",
+   "per-tenant namespaces/indexes",
+   "sync permissions from source systems, audit logs"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "r-010",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How do you keep a RAG index fresh when source documents change daily?",
+  "key_points": [
+   "incremental ingestion via change detection / hashes",
+   "upserts and deletes by doc id",
+   "scheduled or event-driven pipelines",
+   "versioning, re-embedding when model changes",
+   "monitor staleness"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "r-011",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "How do you parse messy enterprise documents (PDFs with tables, scanned pages) for RAG?",
+  "key_points": [
+   "layout-aware parsers (Unstructured, Docling, LlamaParse)",
+   "OCR for scans",
+   "tables to markdown/HTML or summaries",
+   "vision-language models for complex pages",
+   "keep source page refs for citations"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "f-001",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "When would you fine-tune a model instead of using RAG or prompt engineering?",
+  "key_points": [
+   "prompting first, RAG for knowledge, fine-tune for behaviour/format/style",
+   "fine-tuning doesn't reliably add facts",
+   "latency/cost: smaller fine-tuned model replaces big one",
+   "need quality data and evals",
+   "maintenance cost per base model update"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "f-002",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Explain LoRA and QLoRA. Why are they so widely used?",
+  "key_points": [
+   "freeze base weights, train low-rank matrices A,B (rank r)",
+   "far fewer trainable params, small adapters",
+   "QLoRA: 4-bit NF4 quantized base + LoRA, paged optimizers",
+   "fine-tune 7-70B on a single GPU",
+   "key hyperparams: rank, alpha, target modules, lr"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "f-003",
+  "category": "Fine-tuning",
+  "difficulty": "hard",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "Explain SFT, RLHF, DPO and GRPO. How do they differ?",
+  "key_points": [
+   "SFT: supervised on instruction-response pairs",
+   "RLHF: reward model + PPO",
+   "DPO: directly optimize on preference pairs, no reward model",
+   "GRPO: group relative RL used for reasoning (DeepSeek)",
+   "pipeline usually SFT then preference tuning"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "f-004",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How do you prepare a dataset for fine-tuning an LLM? What makes data high quality?",
+  "key_points": [
+   "clear task definition and format (chat template)",
+   "diverse, deduplicated, consistent examples",
+   "quality over quantity (hundreds to few thousand)",
+   "held-out eval set",
+   "synthetic data generation with filtering",
+   "PII removal and licensing"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "f-005",
+  "category": "Fine-tuning",
+  "difficulty": "hard",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is catastrophic forgetting and how do you prevent it when fine-tuning?",
+  "key_points": [
+   "model loses general capabilities",
+   "PEFT/LoRA limits drift",
+   "mix in general data",
+   "lower lr, fewer epochs",
+   "evaluate on general benchmarks before/after"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "f-006",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "How do you evaluate whether a fine-tuned model is actually better than the base model?",
+  "key_points": [
+   "task-specific held-out set",
+   "automatic metrics + LLM-as-judge pairwise",
+   "human review sample",
+   "regression on general capability",
+   "compare cost/latency too",
+   "A/B in production"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "f-007",
+  "category": "Fine-tuning",
+  "difficulty": "hard",
+  "tracks": [
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is knowledge distillation and how would you use it to cut LLM serving costs?",
+  "key_points": [
+   "teacher generates outputs, student learns",
+   "synthetic dataset from large model",
+   "smaller model serves most traffic",
+   "check license terms of teacher",
+   "measure quality gap"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "f-008",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer"
+  ],
+  "recent": false,
+  "q": "Walk me through fine-tuning an open-weights model with Hugging Face and Unsloth on a single GPU.",
+  "key_points": [
+   "load model in 4-bit",
+   "attach LoRA adapters (PEFT)",
+   "format data with chat template",
+   "SFTTrainer from TRL",
+   "monitor loss, eval, save/merge adapters",
+   "export to GGUF/vLLM for serving"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "el-001",
+  "category": "Evals & LLM-as-judge",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "How do you evaluate an LLM application before shipping it to production?",
+  "key_points": [
+   "define success criteria per use case",
+   "golden dataset with edge cases",
+   "automated metrics + LLM-as-judge + human review",
+   "regression suite in CI",
+   "safety/red-team tests",
+   "online metrics after launch"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "el-002",
+  "category": "Evals & LLM-as-judge",
+  "difficulty": "hard",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "What is LLM-as-a-judge? What are its biases and how do you make it reliable?",
+  "key_points": [
+   "LLM scores or compares outputs with a rubric",
+   "position, verbosity, self-preference biases",
+   "clear rubrics, pairwise with swapped order",
+   "calibrate against human labels (agreement)",
+   "use a strong judge, low temperature"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "el-003",
+  "category": "Evals & LLM-as-judge",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "How do you build an evaluation dataset when you have no labelled data?",
+  "key_points": [
+   "start from real user queries / logs",
+   "SME-written golden answers for a small set",
+   "synthetic generation with LLMs then human filter",
+   "cover edge cases and adversarial inputs",
+   "grow it from production failures"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "el-004",
+  "category": "Evals & LLM-as-judge",
+  "difficulty": "hard",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "How do you evaluate an AI agent, not just a single LLM response?",
+  "key_points": [
+   "task success rate end to end",
+   "trajectory evaluation: right tools, right order",
+   "step efficiency, cost, latency",
+   "tool-call accuracy",
+   "sandboxed environments, regression tasks",
+   "trace-based debugging"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "el-005",
+  "category": "Evals & LLM-as-judge",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "What is LLM observability and which tools/metrics would you put in place?",
+  "key_points": [
+   "traces of prompts, retrieval, tool calls",
+   "latency, tokens, cost per request",
+   "quality scores, user feedback",
+   "Langfuse, LangSmith, Arize Phoenix, OpenTelemetry",
+   "alerting on drift and error spikes"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "el-006",
+  "category": "Evals & LLM-as-judge",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Public benchmarks like MMLU are saturated. How should a company actually choose between models?",
+  "key_points": [
+   "benchmarks contaminated and not task-specific",
+   "build own eval set on real tasks",
+   "compare quality, latency, cost, context, licensing",
+   "test with production prompts",
+   "re-evaluate when new models ship"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "am-001",
+  "category": "Agents & MCP",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "What is an AI agent? How is it different from a chain or a workflow?",
+  "key_points": [
+   "LLM in a loop choosing actions/tools toward a goal",
+   "workflow = predefined steps, agent = dynamic control flow",
+   "memory, planning, tool use",
+   "use workflows when steps are known; agents for open-ended",
+   "reliability/cost trade-off"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "am-002",
+  "category": "Agents & MCP",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "What is the Model Context Protocol (MCP) and why has it become important?",
+  "key_points": [
+   "open standard (Anthropic) connecting LLM apps to tools/data",
+   "client-server: hosts, clients, servers",
+   "tools, resources, prompts",
+   "write integration once, use in any MCP client",
+   "security: auth, least privilege, prompt injection via tool output"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "am-003",
+  "category": "Agents & MCP",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "How does tool / function calling work under the hood?",
+  "key_points": [
+   "tools described with JSON schema",
+   "model outputs a structured tool call",
+   "app executes it and returns result",
+   "loop until final answer",
+   "validate arguments, handle errors, parallel calls"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "am-004",
+  "category": "Agents & MCP",
+  "difficulty": "hard",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "Compare multi-agent frameworks: LangGraph, CrewAI, AutoGen, OpenAI Agents SDK, Claude Agent SDK. How do you choose?",
+  "key_points": [
+   "LangGraph: explicit graph/state, control",
+   "CrewAI: role-based crews, fast prototyping",
+   "AutoGen: conversational multi-agent",
+   "vendor SDKs: tight model integration",
+   "choose on control, observability, team skills, lock-in"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "am-005",
+  "category": "Agents & MCP",
+  "difficulty": "hard",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "Single agent or multi-agent system? When does splitting into multiple agents actually help?",
+  "key_points": [
+   "start with one agent + good tools",
+   "multi-agent for parallelism, separation of context, specialized roles",
+   "orchestrator-worker pattern",
+   "costs: more tokens, coordination failures",
+   "evaluate both"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "am-006",
+  "category": "Agents & MCP",
+  "difficulty": "hard",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "How do you stop an agent from looping forever, burning tokens, or taking dangerous actions?",
+  "key_points": [
+   "max steps / token / time budgets",
+   "human-in-the-loop approval for irreversible actions",
+   "least-privilege tools, sandboxes",
+   "guardrails and allow-lists",
+   "observability and kill switch"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "am-007",
+  "category": "Agents & MCP",
+  "difficulty": "hard",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "What is prompt injection, and how do you defend an agent that reads emails, web pages or documents?",
+  "key_points": [
+   "untrusted content contains instructions",
+   "direct vs indirect injection",
+   "treat tool output as data; separate privileges",
+   "confirmation for sensitive actions",
+   "input/output filters, no secret exfiltration paths",
+   "defense in depth - no perfect fix"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "am-008",
+  "category": "Agents & MCP",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "How do you design memory for an agent (short-term, long-term)?",
+  "key_points": [
+   "context window as short-term memory",
+   "summarization of history",
+   "long-term: vector store, key-value facts, profiles",
+   "what to store and when (write policy)",
+   "privacy and forgetting"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "am-009",
+  "category": "Agents & MCP",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "What is context engineering and why do people say it matters more than prompt engineering now?",
+  "key_points": [
+   "deciding what goes in the context window each step",
+   "instructions, retrieved data, tool results, memory, history",
+   "compaction/summarization, pruning stale info",
+   "just-in-time retrieval",
+   "context rot with long contexts"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "am-010",
+  "category": "Agents & MCP",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Describe the ReAct pattern and plan-and-execute pattern for agents.",
+  "key_points": [
+   "ReAct: interleave reasoning and actions with observations",
+   "plan-and-execute: plan upfront then execute steps",
+   "replanning on failure",
+   "trade-offs: adaptability vs efficiency"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "am-011",
+  "category": "Agents & MCP",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer"
+  ],
+  "recent": true,
+  "q": "How would you automate a business workflow with n8n plus an LLM? Walk through an example.",
+  "key_points": [
+   "trigger (webhook, schedule, email)",
+   "nodes: fetch data, LLM node for classify/extract/draft",
+   "conditional routing",
+   "human approval step",
+   "error handling, retries, logging",
+   "credentials management"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "am-012",
+  "category": "Agents & MCP",
+  "difficulty": "hard",
+  "tracks": [
+   "architect"
+  ],
+  "recent": true,
+  "q": "Design an agent that can safely take actions in enterprise systems (CRM, ticketing, email). What is your architecture?",
+  "key_points": [
+   "orchestrator + tools via MCP/APIs",
+   "auth per user (OAuth), least privilege",
+   "approval gates, dry-run mode",
+   "audit log of every action",
+   "evals + monitoring",
+   "rollback strategy"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "am-013",
+  "category": "Agents & MCP",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "What are agent 'skills' or reusable tool packs, and how do they help scale agent capabilities?",
+  "key_points": [
+   "packaged instructions + scripts loaded on demand",
+   "progressive disclosure keeps context small",
+   "reusable across agents/teams",
+   "versioning and testing like code"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mf-001",
+  "category": "ML fundamentals",
+  "difficulty": "easy",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Explain the bias-variance trade-off with an example.",
+  "key_points": [
+   "bias = underfitting, variance = overfitting",
+   "model complexity trade-off",
+   "regularization, more data, cross-validation",
+   "learning curves"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mf-002",
+  "category": "ML fundamentals",
+  "difficulty": "easy",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Precision vs recall - when would you optimise for each? What is F1?",
+  "key_points": [
+   "precision = TP/(TP+FP), recall = TP/(TP+FN)",
+   "fraud/cancer screening: recall",
+   "spam: precision",
+   "F1 harmonic mean",
+   "threshold tuning, PR curve"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mf-003",
+  "category": "ML fundamentals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How do you handle a highly imbalanced dataset?",
+  "key_points": [
+   "right metrics (PR-AUC, F1, not accuracy)",
+   "resampling: SMOTE, undersampling",
+   "class weights",
+   "threshold tuning",
+   "collect more minority data, anomaly detection framing"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mf-004",
+  "category": "ML fundamentals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is overfitting and how do you detect and prevent it in deep learning?",
+  "key_points": [
+   "train vs validation gap",
+   "dropout, weight decay, early stopping",
+   "data augmentation",
+   "simpler model, more data",
+   "cross-validation"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mf-005",
+  "category": "ML fundamentals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Explain gradient descent, learning rate, and optimisers like Adam.",
+  "key_points": [
+   "iteratively move against gradient",
+   "learning rate too high diverges, too low slow",
+   "SGD with momentum",
+   "Adam: adaptive per-parameter rates",
+   "LR schedules, warmup"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mf-006",
+  "category": "ML fundamentals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Explain transfer learning and why it is so effective.",
+  "key_points": [
+   "reuse pretrained representations",
+   "fine-tune last layers or all with low lr",
+   "needs far less data",
+   "examples: ImageNet CNNs, BERT, LLMs"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mf-007",
+  "category": "ML fundamentals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is data leakage? Give two real examples and how you prevent it.",
+  "key_points": [
+   "information from test/future leaks into training",
+   "target leakage features",
+   "fitting scaler on full data before split",
+   "time-series random split",
+   "pipelines, proper splits"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mf-008",
+  "category": "ML fundamentals",
+  "difficulty": "easy",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Compare random forests and gradient boosting (XGBoost / LightGBM).",
+  "key_points": [
+   "bagging vs boosting",
+   "RF parallel, robust, less tuning",
+   "boosting sequential, often higher accuracy",
+   "overfitting risk, tuning",
+   "tabular data still dominated by boosting"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mf-009",
+  "category": "ML fundamentals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How would you design and evaluate an A/B test for a new ML model?",
+  "key_points": [
+   "hypothesis and primary metric",
+   "randomization unit",
+   "sample size / power",
+   "guardrail metrics",
+   "statistical significance, run length, novelty effects"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mf-010",
+  "category": "ML fundamentals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is model drift (data drift vs concept drift) and how do you monitor it?",
+  "key_points": [
+   "data drift: input distribution changes",
+   "concept drift: relationship changes",
+   "PSI, KS tests, embedding drift",
+   "monitor performance with delayed labels",
+   "retraining triggers"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "sd-001",
+  "category": "System design",
+  "difficulty": "hard",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "Design a customer-support chatbot for a company with 10 million users. Walk me through the architecture.",
+  "key_points": [
+   "requirements: latency, scale, languages, escalation",
+   "RAG over help docs + account tools",
+   "intent routing, cheap vs strong model",
+   "guardrails, PII handling",
+   "human handoff",
+   "caching, rate limits, evals, monitoring, cost estimate"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "sd-002",
+  "category": "System design",
+  "difficulty": "hard",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "How do you take a GenAI prototype from a notebook to production?",
+  "key_points": [
+   "define SLAs, success metrics",
+   "API service (FastAPI), containerized",
+   "eval suite + CI",
+   "observability, cost tracking",
+   "security, guardrails, auth",
+   "staged rollout, feedback loop"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "sd-003",
+  "category": "System design",
+  "difficulty": "hard",
+  "tracks": [
+   "architect"
+  ],
+  "recent": true,
+  "q": "Design an LLM gateway / platform for a whole enterprise with many teams using many models.",
+  "key_points": [
+   "unified API, model routing",
+   "auth, quotas, cost attribution per team",
+   "caching, fallbacks, retries",
+   "PII redaction, logging, audit",
+   "prompt management, evals",
+   "self-hosted vs vendor models"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "sd-004",
+  "category": "System design",
+  "difficulty": "hard",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "Your LLM feature costs too much. How do you cut cost by 70% without hurting quality?",
+  "key_points": [
+   "measure cost per request/feature first",
+   "model routing / cascades",
+   "prompt compression, shorter outputs",
+   "prompt caching, semantic caching",
+   "batch API for offline jobs",
+   "fine-tune / distil smaller model",
+   "eval to confirm quality holds"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "sd-005",
+  "category": "System design",
+  "difficulty": "hard",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "Users complain your AI assistant is slow. How do you reduce latency?",
+  "key_points": [
+   "measure: TTFT vs total time, where time goes",
+   "streaming",
+   "smaller/faster model, routing",
+   "parallel tool calls and retrieval",
+   "caching",
+   "reduce prompt size, speculative decoding, region placement"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "sd-006",
+  "category": "System design",
+  "difficulty": "hard",
+  "tracks": [
+   "architect"
+  ],
+  "recent": false,
+  "q": "How would you self-host an open-weights LLM for a company with data-privacy requirements?",
+  "key_points": [
+   "model choice and license",
+   "serving: vLLM / TGI / SGLang",
+   "GPU sizing and quantization",
+   "autoscaling on Kubernetes",
+   "network isolation, no data egress",
+   "monitoring, upgrade path"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "sd-007",
+  "category": "System design",
+  "difficulty": "hard",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Design a document-processing pipeline that extracts structured data from 100,000 invoices a day.",
+  "key_points": [
+   "ingestion queue",
+   "OCR/layout + VLM or LLM extraction",
+   "schema validation, confidence scores",
+   "human review for low confidence",
+   "batch processing, retries, idempotency",
+   "metrics: field accuracy, cost per doc"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "sd-008",
+  "category": "System design",
+  "difficulty": "hard",
+  "tracks": [
+   "architect"
+  ],
+  "recent": true,
+  "q": "Design a real-time AI voice agent (phone calls). What are the hard parts?",
+  "key_points": [
+   "streaming STT -> LLM -> TTS pipeline or speech-to-speech model",
+   "latency budget < ~800ms",
+   "interruptions/barge-in",
+   "tool calls during call",
+   "telephony integration",
+   "monitoring and fallbacks to humans"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "sd-009",
+  "category": "System design",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How do you design for reliability when calling third-party LLM APIs that rate-limit and go down?",
+  "key_points": [
+   "retries with exponential backoff + jitter",
+   "fallback models/providers",
+   "circuit breaker",
+   "timeouts",
+   "queue and async processing",
+   "graceful degradation"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "sd-010",
+  "category": "System design",
+  "difficulty": "hard",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "How would you design a semantic cache for LLM responses? What can go wrong?",
+  "key_points": [
+   "embed the query, similarity lookup",
+   "threshold tuning",
+   "stale answers, personalization leaks",
+   "cache keys include user/tenant context",
+   "TTL and invalidation",
+   "measure hit rate vs wrong-answer rate"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "md-001",
+  "category": "MLOps & DevSecOps",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Describe the end-to-end ML lifecycle and the MLOps practices at each stage.",
+  "key_points": [
+   "problem framing, data collection/versioning",
+   "training with experiment tracking (MLflow)",
+   "validation and model registry",
+   "CI/CD deployment",
+   "monitoring drift, retraining",
+   "governance"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "md-002",
+  "category": "MLOps & DevSecOps",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How would you design a CI/CD pipeline for an ML or LLM application?",
+  "key_points": [
+   "lint, unit tests",
+   "eval suite as a quality gate",
+   "build Docker image",
+   "security scans (SAST, dependency, image)",
+   "deploy to staging, then canary/blue-green",
+   "rollback"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "md-003",
+  "category": "MLOps & DevSecOps",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "What is GitOps and how would you use it to deploy models on Kubernetes?",
+  "key_points": [
+   "Git as single source of truth for desired state",
+   "Argo CD / Flux reconcile cluster",
+   "declarative manifests/Helm",
+   "PR-based changes, audit trail",
+   "easy rollback by reverting commits"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "md-004",
+  "category": "MLOps & DevSecOps",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "What does DevSecOps mean for an AI product? Which security checks would you put in the pipeline?",
+  "key_points": [
+   "shift security left",
+   "SAST, dependency/SCA scanning, container scans (Trivy)",
+   "secrets scanning",
+   "IaC scanning",
+   "LLM-specific: prompt injection tests, data leakage, model supply chain",
+   "least privilege, audit"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "md-005",
+  "category": "MLOps & DevSecOps",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Docker vs Kubernetes - what does each solve? When is Kubernetes overkill?",
+  "key_points": [
+   "Docker: package app + deps into image",
+   "Kubernetes: orchestration, scaling, self-healing",
+   "overkill for small apps/teams",
+   "managed alternatives: Cloud Run, ECS, serverless"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "md-006",
+  "category": "MLOps & DevSecOps",
+  "difficulty": "hard",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "How do you deploy a new model version safely in production?",
+  "key_points": [
+   "shadow deployment",
+   "canary release with metrics",
+   "A/B test",
+   "feature flags",
+   "automatic rollback on metric regression",
+   "model registry versioning"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "md-007",
+  "category": "MLOps & DevSecOps",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How do you manage secrets and API keys for AI applications?",
+  "key_points": [
+   "never in code or git",
+   "secret managers (Vault, AWS Secrets Manager, Azure Key Vault)",
+   "env injection at runtime",
+   "rotation",
+   "scoped keys, least privilege",
+   "scan repos for leaks"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "md-008",
+  "category": "MLOps & DevSecOps",
+  "difficulty": "hard",
+  "tracks": [
+   "architect"
+  ],
+  "recent": true,
+  "q": "What is AI governance, and how would you prepare an AI system for regulations like the EU AI Act or India's DPDP Act?",
+  "key_points": [
+   "risk classification of use case",
+   "data provenance, consent, purpose limitation",
+   "documentation: model cards, logs",
+   "human oversight",
+   "bias/safety testing",
+   "data residency, deletion rights"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "md-009",
+  "category": "MLOps & DevSecOps",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How do you track experiments and version data and models?",
+  "key_points": [
+   "MLflow / Weights & Biases",
+   "DVC or lakeFS for data",
+   "model registry with stages",
+   "reproducibility: seeds, environments, configs"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "pd-001",
+  "category": "Python & data",
+  "difficulty": "easy",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are Python generators and why would you use them in a data pipeline?",
+  "key_points": [
+   "yield produces values lazily",
+   "constant memory for large files/streams",
+   "generator expressions",
+   "use for streaming LLM tokens, batching"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "pd-002",
+  "category": "Python & data",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Explain async/await in Python. When does it help an LLM application?",
+  "key_points": [
+   "event loop, cooperative concurrency",
+   "great for I/O-bound: many API calls",
+   "asyncio.gather for parallel requests",
+   "not for CPU-bound work (use processes)",
+   "FastAPI async endpoints"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "pd-003",
+  "category": "Python & data",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Explain the GIL and how you parallelise CPU-bound vs I/O-bound work in Python.",
+  "key_points": [
+   "GIL allows one thread executing bytecode at a time",
+   "threads/async for I/O-bound",
+   "multiprocessing for CPU-bound",
+   "NumPy/C extensions release GIL",
+   "free-threaded Python 3.13+ experimental"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "pd-004",
+  "category": "Python & data",
+  "difficulty": "easy",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is the difference between a list, tuple, set and dict? Give time complexities for lookup.",
+  "key_points": [
+   "list ordered mutable O(n) search",
+   "tuple immutable, hashable",
+   "set O(1) membership",
+   "dict O(1) key lookup",
+   "when to use each"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "pd-005",
+  "category": "Python & data",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How do you make pandas code fast on a large dataset?",
+  "key_points": [
+   "vectorize, avoid row loops / apply",
+   "correct dtypes, categoricals",
+   "read only needed columns, chunks",
+   "use Polars/DuckDB for bigger data",
+   "profile first"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "pd-006",
+  "category": "Python & data",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "SQL: explain the difference between INNER, LEFT and FULL joins, and between WHERE and HAVING.",
+  "key_points": [
+   "INNER only matches",
+   "LEFT keeps all left rows with NULLs",
+   "FULL keeps both sides",
+   "WHERE filters rows before grouping",
+   "HAVING filters groups after aggregation"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "pd-007",
+  "category": "Python & data",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are SQL window functions? Give an example like ranking or a running total.",
+  "key_points": [
+   "OVER (PARTITION BY ... ORDER BY ...)",
+   "ROW_NUMBER, RANK, DENSE_RANK",
+   "SUM() OVER for running totals",
+   "LAG/LEAD",
+   "no row collapse unlike GROUP BY"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "pd-008",
+  "category": "Python & data",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer"
+  ],
+  "recent": false,
+  "q": "How do you structure a production FastAPI service for an LLM feature?",
+  "key_points": [
+   "routers, Pydantic models for request/response",
+   "dependency injection for auth/clients",
+   "async calls, timeouts",
+   "streaming responses (SSE)",
+   "logging, tracing, health checks",
+   "tests and Docker"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "pd-009",
+  "category": "Python & data",
+  "difficulty": "easy",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are decorators in Python? Write or describe one you'd use in production (retry, timing, caching).",
+  "key_points": [
+   "function that wraps a function",
+   "functools.wraps",
+   "retry with backoff decorator",
+   "lru_cache",
+   "timing/logging"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "bs-001",
+  "category": "Behavioural (STAR)",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Tell me about yourself.",
+  "key_points": [
+   "present -> past -> future structure",
+   "60-120 seconds",
+   "lead with role + core strength",
+   "1-2 proof points with impact",
+   "why this role/company",
+   "no life story"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "bs-002",
+  "category": "Behavioural (STAR)",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Tell me about the most technically challenging AI project you've worked on.",
+  "key_points": [
+   "STAR: situation, task, action, result",
+   "specific technical challenge",
+   "your decisions and trade-offs",
+   "measurable result",
+   "what you learned / would change"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "bs-003",
+  "category": "Behavioural (STAR)",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Tell me about a time a model or AI feature failed in production. What did you do?",
+  "key_points": [
+   "own the failure honestly",
+   "how detected",
+   "immediate mitigation",
+   "root cause",
+   "prevention: evals, monitoring",
+   "lesson"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "bs-004",
+  "category": "Behavioural (STAR)",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Describe a time you disagreed with a stakeholder or teammate on a technical decision.",
+  "key_points": [
+   "respectful, data-driven",
+   "understood their goal",
+   "proposed experiment/data",
+   "outcome and relationship kept",
+   "disagree and commit"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "bs-005",
+  "category": "Behavioural (STAR)",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "How do you explain a complex AI concept or limitation to a non-technical business stakeholder?",
+  "key_points": [
+   "analogy, plain language",
+   "focus on business impact and risk",
+   "set realistic expectations (accuracy, hallucinations)",
+   "visuals/demos",
+   "example"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "bs-006",
+  "category": "Behavioural (STAR)",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "How do you stay current in AI when the field changes every week?",
+  "key_points": [
+   "specific sources (papers, newsletters, communities)",
+   "hands-on: build small prototypes",
+   "filter hype vs production-ready",
+   "share with team",
+   "example of something recently adopted"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "bs-007",
+  "category": "Behavioural (STAR)",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": true,
+  "q": "This is a fully remote role. How do you stay productive, communicate, and build trust with a remote team?",
+  "key_points": [
+   "async-first written communication",
+   "clear updates and documentation",
+   "overlap hours, responsiveness",
+   "proactive about blockers",
+   "measurable output"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "bs-008",
+  "category": "Behavioural (STAR)",
+  "difficulty": "medium",
+  "tracks": [
+   "architect"
+  ],
+  "recent": false,
+  "q": "Tell me about a time you made an architecture decision that you had to defend. What was the trade-off?",
+  "key_points": [
+   "context and options considered",
+   "decision criteria (cost, scale, team skill)",
+   "how you communicated (ADR/doc)",
+   "result",
+   "what you'd revisit"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "bs-009",
+  "category": "Behavioural (STAR)",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Why are you leaving / looking for a new role, and why should we hire you?",
+  "key_points": [
+   "positive, forward-looking",
+   "match your strengths to their needs",
+   "specific proof",
+   "no negativity about past employers"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "bs-010",
+  "category": "Behavioural (STAR)",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Tell me about a time you had to deliver under a very tight deadline.",
+  "key_points": [
+   "prioritisation and scope cut",
+   "communication of trade-offs",
+   "execution",
+   "result",
+   "what you learned"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "bs-011",
+  "category": "Behavioural (STAR)",
+  "difficulty": "easy",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What questions do you have for us?",
+  "key_points": [
+   "ask about team, success in 90 days",
+   "tech stack and AI maturity",
+   "how they evaluate models in production",
+   "biggest challenge",
+   "never say 'no questions'"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "sn-001",
+  "category": "Salary & negotiation",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are your salary expectations?",
+  "key_points": [
+   "research market range for remote role first",
+   "give a researched range, anchor high",
+   "or defer: understand role scope first",
+   "total compensation view",
+   "confident, not apologetic"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "sn-002",
+  "category": "Salary & negotiation",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "We can only offer below your expectation. How do you respond?",
+  "key_points": [
+   "thank them, stay positive",
+   "ask about flexibility: base, bonus, equity, review in 6 months",
+   "justify with value and market data",
+   "know your walk-away number",
+   "get final offer in writing"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "sn-003",
+  "category": "Salary & negotiation",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is your notice period and when can you start?",
+  "key_points": [
+   "honest answer",
+   "flexibility shown",
+   "for immediate joiners: say available immediately",
+   "no overcommitting"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "web-0103",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "CNNs and RNNs don’t use positional embeddings. Why do transformers use positional embeddings?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0104",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How does quantization affect inference speed and memory requirements?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0105",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How do you handle the large memory requirements of KV cache in LLM inference?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0106",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "After tokenization, how are tokens converted into embeddings in the Transformer model?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0107",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is the computational complexity of self-attention in the Transformer model?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0108",
+  "category": "ML fundamentals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How do Transformer models address the vanishing gradient problem?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0109",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is tokenization, and why is it necessary in LLMs?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0110",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is the role of self-attention in the Transformer model, and why is it called “self-attention”?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0111",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is the purpose of the encoder in a Transformer model?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0112",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is the purpose of the decoder in a Transformer model?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0113",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How does the encoder-decoder structure work at a high level in the Transformer model?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0114",
+  "category": "MLOps & DevSecOps",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is the purpose of scaling in the self-attention mechanism in the Transformer model?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0115",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Why does the Transformer model use multiple self-attention heads instead of a single self-attention head?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0116",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How are the outputs of multiple heads combined and projected back in the multi-head attention in the Transformer model?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0117",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How does masked self-attention differ from regular self-attention, and where is it used in a Transformer?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0118",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is the purpose of masked self-attention in the Transformer decoder?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0119",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Explain why self-attention in the decoder is referred to as cross-attention. How does it differ from self-attention in the encoder?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0120",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is the softmax function, and where is it applied in Transformers?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0121",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is the purpose of residual (skip) connections in Transformer layers?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0122",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Why is layer normalization used, and where is it applied in Transformers?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0123",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is cross-entropy loss, and how is it applied during Transformer training?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0124",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are the fundamental limitations of the Transformer model?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0125",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How do Transformers address the limitations of CNNs and RNNs?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0126",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Can you briefly explain the difference between LLM training and inference?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0127",
+  "category": "MLOps & DevSecOps",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is latency in LLM inference, and why is it important?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0128",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How does batching generally help with LLM inference efficiency?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0129",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How can techniques like mixture-of-experts (MoE) optimize inference efficiency?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0130",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are the different decoding strategies in LLMs?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0131",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "When you set the temperature to 0.0, which decoding strategy are you using?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0132",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is the role of the context window during LLM inference?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0133",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is the purpose of temperature in LLM inference, and how does it affect the output?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0134",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is autoregressive generation in the context of LLMs?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0135",
+  "category": "MLOps & DevSecOps",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Do you prefer DLMs or LLMs for latency-sensitive applications?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0136",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is speculative decoding, and when would you use it?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0137",
+  "category": "MLOps & DevSecOps",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How would you design a scalable LLM inference system for real-time applications?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0138",
+  "category": "ML fundamentals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is mixed precision, and why is it used during inference?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0139",
+  "category": "MLOps & DevSecOps",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are the various bottlenecks in a typical LLM inference pipeline when running on a modern GPU?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0140",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How do you measure LLM inference performance?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0141",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are the different LLM inference engines available? Which one do you prefer?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0142",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are the challenges in LLM inference?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0143",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are the possible options for accelerating LLM inference?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0144",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is prompt engineering, and why is it important for LLMs?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0145",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Why is context length important when designing prompts for LLMs?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0146",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How would you structure a prompt to ensure the LLM output is in a specific format, like JSON?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0147",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are the different phases in LLM development?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0148",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are the different types of LLM fine-tuning?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0149",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What role does instruction tuning play in improving an LLM’s usability?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0150",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What role does alignment tuning play in improving an LLM's usability?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0151",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How do you prevent overfitting during fine-tuning?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0152",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is catastrophic forgetting, and why is it a concern in fine-tuning?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0153",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are the strengths and limitations of full fine-tuning?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0154",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "When might prompt engineering be preferred over task-specific fine-tuning?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0155",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "When should you use fine-tuning vs RAG?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0156",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are the limitations of using RAG over fine-tuning?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0157",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are the limitations of fine-tuning compared to RAG?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0158",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "When should you prefer task-specific fine-tuning over prompt engineering?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0159",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is LoRA, and how does it work?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0160",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is QLoRA, and how does it differ from LoRA?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0161",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "When would you use QLoRA instead of standard LoRA?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0162",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How would you handle LLM fine-tuning on consumer hardware with limited GPU memory?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0163",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is gradient accumulation, and how does it help with fine-tuning large models?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0164",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are the possible options to speed up LLM fine-tuning?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0165",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is the difference between casual language modeling and masked language modeling?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0166",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How do LLMs handle out-of-vocabulary (OOV) words?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0167",
+  "category": "MLOps & DevSecOps",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "In the context of LLM pretraining, what is scaling law?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0168",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is model parallelism, and how is it used in LLM pre-training?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0169",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is the significance of self-supervised learning in LLM pretraining?",
+  "key_points": [],
+  "source": "KalyanKS LLM Interview Q&A Hub"
+ },
+ {
+  "id": "web-0170",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is LLM, and how are LLMs trained?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0171",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is a token in the language model?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0172",
+  "category": "System design",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How to estimate the cost of running SaaS-based and Open Source LLM models?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0173",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are different decoding strategies for picking output tokens?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0174",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are different ways you can define stopping criteria in large language model?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0175",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How to use stop sequences in LLMs?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0176",
+  "category": "Evals & LLM-as-judge",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is hallucination, and how can it be controlled using prompt engineering?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0177",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How to improve the reasoning ability of LLM through prompt engineering?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0178",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How to improve LLM reasoning if your COT prompt fails?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0179",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are some benefits of using the RAG system?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0180",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "When should I use Fine-tuning instead of RAG?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0181",
+  "category": "System design",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are the architecture patterns for customizing LLM with proprietary data?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0182",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is chunking, and why do we chunk our data?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0183",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What factors influence chunk size?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0184",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are the different types of chunking methods?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0185",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How to find the ideal chunk size?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0186",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is the best method to digitize and chunk complex documents like annual reports?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0187",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How to handle tables during chunking?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0188",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How do you handle very large table for better retrieval?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0189",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How to handle list item during chunking?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0190",
+  "category": "MLOps & DevSecOps",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How do you build production grade document processing and indexing pipeline?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0191",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How is an embedding model used in the context of LLM applications?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0192",
+  "category": "Evals & LLM-as-judge",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How to benchmark embedding models on your data?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0193",
+  "category": "Evals & LLM-as-judge",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Suppose you are working with an open AI embedding model, after benchmarking accuracy is coming low, how would you further improve the accuracy of embedding the search model?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0194",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Walk me through steps of improving sentence transformer model used for embedding?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0195",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is a vector database?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0196",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How does a vector database differ from traditional databases?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0197",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How does a vector database work?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0198",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Explain difference between vector index, vector DB & vector plugins?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0199",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Explain product quantization (PQ) indexing method?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0200",
+  "category": "Evals & LLM-as-judge",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How would you decide ideal search similarity metrics for the use case?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0201",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Explain different types and challenges associated with filtering in vector DB?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0202",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How to decide the best vector database for your needs?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0203",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are architecture patterns for information retrieval & semantic search?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0204",
+  "category": "MLOps & DevSecOps",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How can you achieve efficient and accurate search results in large-scale datasets?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0205",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Consider a scenario where a client has already built a RAG-based system that is not giving accurate results, upon investigation you find out that the retrieval system is not accurate, what steps you will take to improve it?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0206",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How to fine-tune re-ranking models?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0207",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Explain most common metric used in information retrieval and when it fails?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0208",
+  "category": "Evals & LLM-as-judge",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "If you were to create an algorithm for a Quora-like question-answering system, with the objective of ensuring users find the most pertinent answers as quickly as possible, which evaluation metric would you choose to assess the effectiveness of your system?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0209",
+  "category": "Evals & LLM-as-judge",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "I have a recommendation system, which metric should I use to evaluate the system?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0210",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Compare different information retrieval metrics and which one to use when?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0211",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How does hybrid search works?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0212",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are different techniques to be used to improved retrieval?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0213",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Can you provide a detailed explanation of the concept of self-attention?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0214",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is positional encoding?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0215",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are some of the advantages of using a transformer instead of LSTM?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0216",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is the difference between local attention and global attention?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0217",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What makes transformers heavy on computation and memory, and how can we address this?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0218",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How can you increase the context length of an LLM?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0219",
+  "category": "System design",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "If I have a vocabulary of 100K words/tokens, how can I optimize transformer architecture?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0220",
+  "category": "System design",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Explain different types of LLM architecture and which type of architecture is best for which task?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0221",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is fine-tuning, and why is it needed?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0222",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Which scenario do we need to fine-tune LLM?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0223",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How to make the decision of fine-tuning?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0224",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How to create fine-tuning datasets for Q&A?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0225",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How to set hyperparameters for fine-tuning?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0226",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How to estimate infrastructure requirements for fine-tuning LLM?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0227",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How do you fine-tune LLM on consumer hardware?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0228",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are the different categories of the PEFT method?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0229",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is catastrophic forgetting in LLMs?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0230",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are different re-parameterized methods for fine-tuning?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0231",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "At which stage you will decide to go for the Preference alignment type of method rather than SFT?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0232",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is RLHF, and how is it used?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0233",
+  "category": "Fine-tuning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is the reward hacking issue in RLHF?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0234",
+  "category": "Evals & LLM-as-judge",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How do you evaluate the best LLM model for your use case?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0235",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How to evaluate RAG-based systems?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0236",
+  "category": "Evals & LLM-as-judge",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are different metrics for evaluating LLMs?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0237",
+  "category": "Evals & LLM-as-judge",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are different forms of hallucinations?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0238",
+  "category": "Evals & LLM-as-judge",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How to control hallucinations at various levels?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0239",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Why does quantization not decrease the accuracy of LLM?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0240",
+  "category": "MLOps & DevSecOps",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are the techniques by which you can optimize the inference of LLM for higher throughput?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0241",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How to accelerate response time of model without attention approximation like group query attention?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0242",
+  "category": "Agents & MCP",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Why do we need agents and what are some common strategies to implement agents?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0243",
+  "category": "System design",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How to optimize cost of overall LLM System?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0244",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are mixture of expert models (MoE)?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0245",
+  "category": "RAG",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How to build production grade RAG system, explain each component in detail ?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0246",
+  "category": "ML fundamentals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How to train LLM with low precision training without compromising on accuracy ?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "web-0247",
+  "category": "LLM internals",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How do you make sure that attention layer focuses on the right part of the input?",
+  "key_points": [],
+  "source": "llmgenai LLM Interview Questions"
+ }
+]

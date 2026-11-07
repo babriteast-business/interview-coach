@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interview Coach</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<section id="view-login" class="login-wrap hidden">
+  <div class="login-card">
+    <div class="brand big"><span class="logo">◆</span> Interview Coach</div>
+    <p class="muted">Your private AI interview panel for remote AI Engineer &amp; AI Architect roles.</p>
+    <div class="tabs">
+      <button class="tab active" data-tab="login" type="button">Log in</button>
+      <button class="tab" data-tab="register" type="button" id="tab-register">Register</button>
+    </div>
+    <form id="login-form" data-mode="login">
+      <label>Username<input id="lg-user" autocomplete="username" required></label>
+      <label>Password<input id="lg-pass" type="password" autocomplete="current-password" required></label>
+      <label id="lg-pass2-wrap" class="hidden">Confirm password<input id="lg-pass2" type="password" autocomplete="new-password"></label>
+      <button class="btn primary wide" type="submit" id="login-btn">Log in</button>
+      <p class="err" id="login-err"></p>
+      <p class="ok-msg" id="login-ok"></p>
+    </form>
+    <p class="muted small" id="register-hint"></p>
+  </div>
+</section>
+
+<!-- ============ APP SHELL ============ -->
+<div id="shell" class="hidden">
+  <aside class="sidebar">
+    <div class="brand"><span class="logo">◆</span> Interview Coach</div>
+    <nav>
+      <a data-view="dashboard" class="active">▦ Dashboard</a>
+      <a data-view="setup">🎙 Mock interview</a>
+      <a data-view="coding">⌨ Coding round</a>
+      <a data-view="coach">✦ Coach &amp; doubts</a>
+      <a data-view="history">↺ History</a>
+      <a data-view="profile">☺ My profile</a>
+      <a data-view="admin" id="nav-admin" class="hidden">⚙ Admin</a>
+    </nav>
+    <div class="side-foot">
+      <div class="muted small" id="who"></div>
+      <div class="muted small" id="model-status"></div>
+      <div class="muted small" id="usage-status"></div>
+      <button class="btn ghost small" id="logout">Log out</button>
+    </div>
+  </aside>
+
+  <main>
+    <!-- DASHBOARD -->
+    <section id="view-dashboard" class="view">
+      <h1>Welcome back<span id="dash-name"></span></h1>
+      <p class="muted">Practise daily. Every weak answer comes back until you nail it.</p>
+      <div class="tiles">
+        <div class="tile"><div class="tile-n" id="st-answered">0</div><div class="tile-l">Answers graded</div></div>
+        <div class="tile"><div class="tile-n" id="st-avg">–</div><div class="tile-l">Average score /10</div></div>
+        <div class="tile"><div class="tile-n" id="st-7d">–</div><div class="tile-l">Last 7 days</div></div>
+        <div class="tile"><div class="tile-n" id="st-code">0</div><div class="tile-l">Coding problems solved</div></div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <h3>Readiness by topic</h3>
+          <div id="cat-bars" class="bars"><p class="muted">No answers yet. Start a mock interview.</p></div>
+        </div>
+        <div class="card">
+          <h3>Quick start</h3>
+          <div class="quick">
+            <button class="btn primary" data-quick="engineer|mixed|8">Full AI Engineer mock (8 Qs)</button>
+            <button class="btn" data-quick="architect|mixed|8">Full AI Architect mock (8 Qs)</button>
+            <button class="btn" data-quick="engineer|Agents & MCP|5">Agents &amp; MCP drill</button>
+            <button class="btn" data-quick="engineer|RAG|5">RAG drill</button>
+            <button class="btn" data-quick="engineer|System design|3">System design (3 Qs)</button>
+            <button class="btn" data-quick="engineer|Behavioural (STAR)|5">Behavioural STAR</button>
+          </div>
+          <p class="muted small" id="bank-info"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETUP -->
+    <section id="view-setup" class="view hidden">
+      <h1>Mock interview</h1>
+      <p class="muted">The panel asks one question at a time, grades you honestly, and asks the cross-question a real interviewer would.</p>
+      <div class="card form-grid">
+        <label>Role track
+          <select id="s-track"><option value="engineer">AI Engineer</option><option value="architect">AI Architect</option></select></label>
+        <label>Topic<select id="s-cat"></select></label>
+        <label>Difficulty
+          <select id="s-diff"><option value="mixed">Mixed</option><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard / senior</option></select></label>
+        <label>Questions<input id="s-count" type="number" min="1" max="25" value="8"></label>
+        <label>Question source
+          <select id="s-src">
+            <option value="mixed">Mixed: bank + fresh AI-generated (recommended)</option>
+            <option value="bank">Question bank only (fewest API calls)</option>
+            <option value="live">All fresh AI-generated</option>
+          </select></label>
+        <label class="check"><input type="checkbox" id="s-voice"> Interviewer reads questions aloud</label>
+        <button class="btn primary" id="start-btn">Start interview →</button>
+      </div>
+    </section>
+
+    <!-- INTERVIEW ROOM -->
+    <section id="view-room" class="view hidden">
+      <div class="room-head">
+        <span class="pill" id="r-cat"></span>
+        <span class="pill ghost" id="r-progress"></span>
+        <span class="pill warn hidden" id="r-follow">Follow-up</span>
+        <span class="timer" id="r-timer">00:00</span>
+      </div>
+      <div class="question-card">
+        <div class="interviewer"><span class="avatar">AI</span><span class="muted small">Interviewer</span>
+          <button class="icon-btn" id="r-speak" title="Read aloud">🔊</button></div>
+        <div class="question" id="r-question"></div>
+      </div>
+      <div id="r-answer-box">
+        <textarea id="r-answer" rows="9" placeholder="Answer as if you are speaking to the interviewer. Structure: one-line answer → how it works → trade-offs → a real example with numbers."></textarea>
+        <div class="row">
+          <button class="btn" id="r-mic">🎤 Speak answer</button>
+          <span class="muted small" id="r-mic-status"></span>
+          <span class="spacer"></span>
+          <button class="btn ghost" id="r-skip">Skip</button>
+          <button class="btn primary" id="r-submit">Submit answer</button>
+        </div>
+      </div>
+      <div id="r-feedback" class="hidden"></div>
+    </section>
+
+    <!-- REPORT -->
+    <section id="view-report" class="view hidden"></section>
+
+    <!-- CODING -->
+    <section id="view-coding" class="view hidden">
+      <h1>Coding round</h1>
+      <p class="muted">Real tests run your code. Pass/fail does not depend on the AI. Explain your approach out loud as you go.</p>
+      <div class="notice hidden" id="p-locked">Running code on the server is limited to users the admin has marked as trusted. You can still read problems, write code and view solutions.</div>
+      <div class="coding-layout">
+        <div class="problem-list" id="p-list"></div>
+        <div class="problem-pane">
+          <div id="p-empty" class="muted">Pick a problem on the left.</div>
+          <div id="p-body" class="hidden">
+            <h2 id="p-title"></h2>
+            <div class="row small"><span class="pill" id="p-diff"></span><span class="pill ghost" id="p-topic"></span><span class="muted" id="p-tests"></span></div>
+            <div class="prompt md" id="p-prompt"></div>
+            <textarea id="p-code" class="code" spellcheck="false" rows="16"></textarea>
+            <div class="row">
+              <button class="btn primary" id="p-run">▶ Run tests</button>
+              <button class="btn" id="p-review">AI review of my code</button>
+              <span class="spacer"></span>
+              <button class="btn ghost" id="p-reset">Reset</button>
+              <button class="btn ghost" id="p-solution">Show solution</button>
+            </div>
+            <div id="p-result"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COACH -->
+    <section id="view-coach" class="view hidden">
+      <div class="coach-layout">
+        <div class="threads">
+          <button class="btn primary wide" id="c-new">+ New chat</button>
+          <div id="c-threads"></div>
+        </div>
+        <div class="chat">
+          <div class="chat-head">
+            <h2>Coach &amp; doubts</h2>
+            <select id="c-track" class="small-select"><option value="engineer">AI Engineer</option><option value="architect">AI Architect</option></select>
+            <button class="btn ghost small" id="c-export">⬇ Export .md (OneNote)</button>
+          </div>
+          <div class="messages" id="c-messages">
+            <div class="starter">
+              <p class="muted">Ask anything. Or tap a starter:</p>
+              <div class="chips" id="c-chips"></div>
+            </div>
+          </div>
+          <form class="composer" id="c-form">
+            <textarea id="c-input" rows="3" placeholder="e.g. Write my project script for the RAG chatbot I built: problem, architecture, challenges, results, and the cross-questions with answers"></textarea>
+            <button class="btn primary" type="submit" id="c-send">Send</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section id="view-history" class="view hidden">
+      <h1>History</h1>
+      <div class="card"><table class="table" id="h-table"></table></div>
+      <div id="h-detail"></div>
+    </section>
+
+    <!-- ADMIN -->
+    <section id="view-admin" class="view hidden">
+      <h1>Admin</h1>
+      <p class="muted">Only you see this page. New registrations wait here until you approve them.</p>
+      <div class="card form-grid" style="max-width:none;margin-bottom:16px">
+        <label class="check"><input type="checkbox" id="ad-reg"> Allow new registrations</label>
+        <label>Daily AI calls per user (you are unlimited)<input type="number" id="ad-limit" min="0" max="500"></label>
+        <button class="btn primary" id="ad-save">Save settings</button>
+      </div>
+      <div class="card"><table class="table" id="ad-users"></table></div>
+      <p class="muted small">Trusted = may run code in the coding round. Only trust people you know: their code runs on your server.</p>
+    </section>
+
+    <!-- PROFILE -->
+    <section id="view-profile" class="view hidden">
+      <h1>My profile</h1>
+      <p class="muted">The interviewer uses this to probe your claims, and the coach builds your scripts from it. Fill in your real projects and work history. Anything left as [FILL] the coach will ask you about instead of inventing.</p>
+      <textarea id="pf-text" class="code" rows="26"></textarea>
+      <div class="row"><button class="btn primary" id="pf-save">Save profile</button><span class="muted small" id="pf-status"></span></div>
+      <div class="card hidden" id="pw-card" style="max-width:420px;margin-top:20px">
+        <h3>Change password</h3>
+        <label>Current password<input type="password" id="pw-old"></label>
+        <label style="margin-top:10px">New password (8+ characters)<input type="password" id="pw-new"></label>
+        <div class="row"><button class="btn" id="pw-save">Change password</button><span class="muted small" id="pw-status"></span></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+<script src="/static/app.js"></script>
+</body>
+</html>

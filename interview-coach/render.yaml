@@ -1,0 +1,26 @@
+# Render Blueprint: Render reads this when you click New > Blueprint and pick this repo.
+services:
+  - type: web
+    name: interview-coach
+    runtime: python
+    plan: free
+    region: singapore
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips="*"
+    healthCheckPath: /api/auth/status
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: OPENROUTER_BASE_URL
+        value: https://openrouter.ai/api/v1
+      - key: MODELS
+        value: openrouter/free,auto
+      # You type these four in when Render asks (they never go into GitHub):
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: DATABASE_URL
+        sync: false
