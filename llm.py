@@ -150,6 +150,9 @@ def _mock(messages):
         return json.dumps({
             "score": 6, "verdict": "Borderline hire",
             "strengths": ["Clear structure", "Mentioned trade-offs"],
+            "mistakes": [{"said": "Bagging reduces bias", "correct": "Bagging mainly reduces variance; boosting reduces bias."}],
+            "corrected_answer": "MOCK corrected: Bagging trains models in parallel on bootstrap samples and averages them, which mainly cuts variance.",
+            "explanation": "MOCK explanation:\n- **Bagging** = parallel, averages away noise\n- **Boosting** = sequential, fixes errors",
             "gaps": ["No production metrics", "Missed evaluation strategy"],
             "model_answer": "MOCK model answer: define, explain mechanism, trade-offs, a real example, how you measured it.",
             "delivery_tips": "Lead with the one-line answer, then go deeper.",

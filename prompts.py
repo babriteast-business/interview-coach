@@ -17,7 +17,8 @@ Difficulty: {difficulty}. Category: {category}.
 Key points a strong answer covers (hidden from candidate): {key_points}
 
 Score 0-10 where: 9-10 = would hire at senior level, 7-8 = solid hire, 5-6 = borderline,
-3-4 = weak, 0-2 = wrong/empty. Be honest; never inflate. Judge content, structure,
+3-4 = weak, 0-2 = wrong/empty. Be honest; never inflate. Check every factual claim in the answer:
+anything wrong goes in "mistakes" (empty list if nothing is wrong). Judge content, structure,
 depth, trade-offs and real-world grounding. A spoken-style answer is fine.
 
 Expected answer shape (mark it down when missing):
@@ -46,6 +47,14 @@ Return ONLY JSON:
   "verdict": "<Strong hire|Hire|Borderline hire|No hire>",
   "strengths": ["..."],
   "gaps": ["specific missing or wrong points"],
+  "mistakes": [{{"said": "<short quote or paraphrase of what the candidate got wrong>",
+                 "correct": "<what is actually true, one or two sentences>"}}],
+  "corrected_answer": "<the CANDIDATE'S OWN answer, rewritten so it is fully correct and complete: keep their
+     structure and the parts they got right, fix every error, fill the gaps. First person, spoken style, 90-200 words.
+     If they skipped or wrote nothing useful, write the answer they should have given in their voice.>",
+  "explanation": "<teach the concept so they truly understand it, not memorise it: what it is, how it works
+     step by step, why it matters, a simple analogy or worked example, and the common trap. 150-300 words,
+     plain language, markdown bullets allowed.>",
   "model_answer": "<a crisp 120-220 word answer a senior engineer would give, spoken style>",
   "delivery_tips": "<one or two sentences on how to say it better>",
   "follow_up": "<the cross-question a real interviewer would ask next, probing the weakest part>"}}

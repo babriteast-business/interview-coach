@@ -20,11 +20,38 @@ function toast(msg, ms = 4000) { const t = $("#toast"); t.textContent = msg; t.c
 function esc(s) { return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
 function md(s) {
   if (window.marked && window.DOMPurify) return DOMPurify.sanitize(marked.parse(String(s || "")));
-  return `<div style="white-space:pre-wrap">${esc(s)}</div>`;
+  // small built-in fallback: headings, bullets, bold, italics, inline code, code blocks
+  const blocks = String(s || "").split(/```/);
+  return blocks.map((b, i) => {
+    if (i % 2) return `<pre>${esc(b.replace(/^\w*\n/, ""))}</pre>`;
+    let html = "", inList = false;
+    for (const raw of b.split("\n")) {
+      const line = esc(raw).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/(^|\s)\*(\S.+?)\*/g, "$1<i>$2</i>").replace(/`(.+?)`/g, "<code>$1</code>");
+      const li = line.match(/^\s*(?:[-*]|\d+[.)])\s+(.*)/);
+      const h = line.match(/^(#{1,4})\s+(.*)/);
+      if (li) { if (!inList) { html += "<ul>"; inList = true; } html += `<li>${li[1]}</li>`; continue; }
+      if (inList) { html += "</ul>"; inList = false; }
+      if (h) html += `<h3>${h[2]}</h3>`; else if (line.trim()) html += `<p>${line}</p>`;
+    }
+    return html + (inList ? "</ul>" : "");
+  }).join("");
 }
 const level = (n) => (n >= 7 ? "hi" : n >= 5 ? "mid" : "lo");
 function busy(btn, on, label) { if (!btn) return; if (on) { btn._t = btn.innerHTML; btn.disabled = true; btn.innerHTML = `${label || "Working"}<span class="dots"></span>`; } else { btn.disabled = false; btn.innerHTML = btn._t; } }
 function download(name, text) { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type: "text/markdown" })); a.download = name; a.click(); }
+// the teaching block: what was wrong, the candidate's own answer fixed, and a real explanation
+function corrections(fb, original, inHistory = false) {
+  const ms = (fb.mistakes || []).filter((m) => m && (m.said || m.correct));
+  return `
+    ${ms.length ? `<div class="fixes"><h3>What you got wrong</h3>${ms.map((m) => `<div class="fix">
+      <div class="fix-said"><span>You said</span>${esc(m.said)}</div>
+      <div class="fix-right"><span>Actually</span>${esc(m.correct)}</div></div>`).join("")}</div>` : ""}
+    <details class="orig"${inHistory ? " open" : ""}><summary>Your original answer</summary><div class="your-answer">${esc(original || "")}</div></details>
+    ${fb.corrected_answer ? `<div class="corrected"><h3>Your answer, corrected</h3>
+      <div class="prompter-text">${esc(fb.corrected_answer)}</div>
+      ${inHistory ? "" : `<div class="answer-actions" style="margin-bottom:0"><button class="btn ghost small" id="fb-read-fix">Listen to it</button></div>`}</div>` : ""}
+    ${fb.explanation ? `<div class="explain"><h3>Understand it properly</h3><div class="md">${md(fb.explanation)}</div></div>` : ""}`;
+}
 const list = (a, empty = "") => (a && a.length ? `<ul>${a.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : empty);
 
 // the one orchestrated moment: score dial fills while the number counts up
@@ -225,7 +252,7 @@ function renderFeedback(fb) {
       <div class="landed"><h3>What landed</h3>${list(fb.strengths, `<p class="empty">Nothing yet. Look at the model answer.</p>`)}</div>
       <div class="missed"><h3>What the panel missed</h3>${list(fb.gaps, `<p class="empty">No gaps. Nicely done.</p>`)}</div>
     </div>
-    <h3>Your answer</h3><div class="your-answer">${esc($("#r-answer").value)}</div>
+    ${corrections(fb, $("#r-answer").value)}
     <div class="prompter"><h3>How a senior candidate would say it</h3>
       <div class="prompter-text">${esc(fb.model_answer || "")}</div>
       <div class="answer-actions" style="margin-bottom:0"><button class="btn ghost small" id="fb-read">Listen to it</button></div></div>
@@ -241,6 +268,7 @@ function renderFeedback(fb) {
   box.classList.remove("hidden");
   playDial(box);
   $("#fb-read").onclick = () => speak(fb.model_answer || "");
+  if ($("#fb-read-fix")) $("#fb-read-fix").onclick = () => speak(fb.corrected_answer || "");
   if ($("#fb-follow")) $("#fb-follow").onclick = () => nextQuestion(true);
   $("#fb-next").onclick = () => nextQuestion(false);
   $("#fb-retry").onclick = () => { box.classList.add("hidden"); $("#r-answer-box").classList.remove("hidden"); startTimer(); $("#r-answer").focus(); };
@@ -439,8 +467,10 @@ async function showTranscript(id) {
     <button class="btn ghost small" id="h-export">Download</button>
     ${d.interview.finished ? "" : `<button class="btn gold small" id="h-resume">Resume</button>`}</div>` +
     d.turns.map((t) => `<div class="t-card"><div class="p-meta"><span class="tag dim">${esc(t.category)}</span>${t.is_followup ? `<span class="tag coral">Follow-up</span>` : ""}<span class="spacer"></span><b class="report-score v-${level(t.score || 0)}">${t.score ?? "–"}</b></div>
-      <p class="q">${esc(t.question)}</p><div class="your-answer">${esc(t.answer || "Not answered")}</div>
-      ${t.feedback.model_answer ? `<details><summary>Model answer and gaps</summary><div class="prompter" style="margin-top:12px"><div class="prompter-text">${esc(t.feedback.model_answer)}</div></div>${list(t.feedback.gaps)}</details>` : ""}</div>`).join("");
+      <p class="q">${esc(t.question)}</p>
+      ${t.feedback.model_answer || t.feedback.corrected_answer ? `<details><summary>Corrections, explanation and model answer</summary><div style="margin-top:14px">${corrections(t.feedback, t.answer, true)}
+        ${t.feedback.model_answer ? `<div class="prompter"><h3>How a senior candidate would say it</h3><div class="prompter-text">${esc(t.feedback.model_answer)}</div></div>` : ""}${list(t.feedback.gaps)}</div></details>`
+        : `<div class="your-answer">${esc(t.answer || "Not answered")}</div>`}</div>`).join("");
   $("#h-export").onclick = async () => download(`interview-${id}.md`, await api(`/api/interview/${id}/export`));
   if ($("#h-resume")) $("#h-resume").onclick = () => {
     state.iv = { id, total: d.interview.total };

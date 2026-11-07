@@ -285,3 +285,20 @@ details summary{cursor:pointer;color:var(--gold);font-weight:700}
 .admin-grid{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
 input[type=file]{padding:10px;cursor:pointer}
 input[type=file]::file-selector-button{font:700 14px var(--body);background:var(--desk-2);color:var(--paper);border:none;border-radius:999px;padding:8px 14px;margin-right:12px;cursor:pointer}
+
+/* teaching block after each answer */
+.fixes{max-width:900px;margin-bottom:22px}
+.fixes h3{color:var(--coral);margin-bottom:10px}
+.fix{display:grid;grid-template-columns:1fr 1fr;border:2px solid var(--desk);border-radius:var(--r);overflow:hidden;margin-bottom:8px}
+.fix>div{padding:12px 16px}
+.fix span{display:block;font:800 13px var(--display);margin-bottom:2px}
+.fix-said{background:var(--coral-wash)}.fix-said span{color:var(--coral)}
+.fix-right{background:var(--mint-wash)}.fix-right span{color:var(--mint)}
+.orig{max-width:900px;margin-bottom:22px}
+.orig .your-answer{margin:12px 0 0}
+.corrected{max-width:900px;background:var(--mint-wash);border-radius:var(--r);padding:22px 24px;margin-bottom:22px}
+.corrected h3{color:var(--mint);margin-bottom:10px}
+.explain{max-width:900px;border-left:4px solid var(--gold);padding:4px 0 4px 20px;margin-bottom:26px}
+.explain h3{color:var(--gold);margin-bottom:8px}
+.explain .md{max-width:70ch}.explain .md p:first-child{margin-top:0}
+@media (max-width:900px){.fix{grid-template-columns:1fr}}

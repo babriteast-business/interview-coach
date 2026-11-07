@@ -3827,5 +3827,745 @@
   "q": "How do you make sure that attention layer focuses on the right part of the input?",
   "key_points": [],
   "source": "llmgenai LLM Interview Questions"
+ },
+ {
+  "id": "mla-001",
+  "category": "ML algorithms",
+  "difficulty": "easy",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How does a decision tree decide where to split? Explain Gini impurity and entropy.",
+  "key_points": [
+   "greedy, top-down recursive splitting",
+   "choose the feature/threshold that most reduces impurity",
+   "Gini = 1 - sum(p_i^2); entropy = -sum(p_i log p_i); information gain = parent entropy - weighted child entropy",
+   "regression trees minimise variance/MSE",
+   "both usually give similar trees; Gini is slightly cheaper"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mla-002",
+  "category": "ML algorithms",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Why do single decision trees overfit, and how do you control it?",
+  "key_points": [
+   "deep trees memorise noise: high variance",
+   "pre-pruning: max_depth, min_samples_leaf, min_samples_split, max_features",
+   "post-pruning: cost-complexity pruning (ccp_alpha)",
+   "validate with cross-validation",
+   "or use ensembles (bagging/boosting)"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mla-003",
+  "category": "ML algorithms",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Explain bagging vs boosting. Which reduces bias and which reduces variance?",
+  "key_points": [
+   "bagging: train models in parallel on bootstrap samples, average/vote",
+   "bagging mainly reduces variance (e.g. random forest)",
+   "boosting: train sequentially, each model fixes the previous errors",
+   "boosting mainly reduces bias (AdaBoost, gradient boosting)",
+   "boosting is more sensitive to noise/outliers and needs tuning"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mla-004",
+  "category": "ML algorithms",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How does a random forest work, and why is it better than one decision tree?",
+  "key_points": [
+   "many trees on bootstrap samples (bagging)",
+   "random subset of features at each split decorrelates trees",
+   "majority vote / average lowers variance",
+   "out-of-bag error as free validation",
+   "feature importance, robust with little tuning"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mla-005",
+  "category": "ML algorithms",
+  "difficulty": "hard",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Explain gradient boosting. How does XGBoost or LightGBM improve on it?",
+  "key_points": [
+   "additive model: each new tree fits the negative gradient (residuals) of the loss",
+   "learning rate (shrinkage) and number of trees trade off",
+   "XGBoost: second-order gradients, regularisation (L1/L2 on leaves), handles missing values, parallel split finding",
+   "LightGBM: histogram binning, leaf-wise growth, faster on large data",
+   "key params: n_estimators, learning_rate, max_depth/num_leaves, subsample, colsample; early stopping"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mla-006",
+  "category": "ML algorithms",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Explain AdaBoost in simple terms.",
+  "key_points": [
+   "sequence of weak learners (often stumps)",
+   "misclassified samples get higher weight next round",
+   "each learner gets a vote weight based on its accuracy",
+   "final prediction = weighted vote",
+   "sensitive to noisy labels and outliers"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mla-007",
+  "category": "ML algorithms",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How do you get feature importance from tree models, and what are its pitfalls?",
+  "key_points": [
+   "impurity-based (gain) importance",
+   "biased toward high-cardinality / continuous features",
+   "permutation importance on validation data is more reliable",
+   "SHAP values for per-prediction explanations",
+   "correlated features split importance between them"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mla-008",
+  "category": "ML algorithms",
+  "difficulty": "easy",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is stacking (stacked ensembles), and when would you use it?",
+  "key_points": [
+   "train diverse base models",
+   "a meta-model learns to combine their out-of-fold predictions",
+   "must use out-of-fold predictions to avoid leakage",
+   "small accuracy gains, more complexity",
+   "common in competitions, less in production"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mla-009",
+  "category": "ML algorithms",
+  "difficulty": "easy",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Linear regression vs logistic regression: what's the difference?",
+  "key_points": [
+   "linear: predicts a continuous value, MSE loss",
+   "logistic: predicts a probability for classification via sigmoid",
+   "logistic uses log loss (cross-entropy)",
+   "both linear in the features; logistic decision boundary is linear",
+   "coefficients interpretable (log-odds for logistic)"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mla-010",
+  "category": "ML algorithms",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Explain L1 vs L2 regularisation. Why does L1 produce sparse models?",
+  "key_points": [
+   "add penalty to the loss to reduce overfitting",
+   "L1 (lasso) = sum |w|, drives some weights exactly to zero: feature selection",
+   "L2 (ridge) = sum w^2, shrinks weights smoothly, handles multicollinearity",
+   "elastic net combines both",
+   "geometric view: L1 diamond corners touch axes"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mla-011",
+  "category": "ML algorithms",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are the assumptions of linear regression?",
+  "key_points": [
+   "linear relationship",
+   "independent errors",
+   "homoscedasticity (constant error variance)",
+   "normally distributed residuals (for inference)",
+   "no strong multicollinearity; check with residual plots and VIF"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mla-012",
+  "category": "ML algorithms",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Explain how a Support Vector Machine works and what the kernel trick is.",
+  "key_points": [
+   "finds the maximum-margin hyperplane",
+   "support vectors are the points on the margin",
+   "soft margin with C trades margin width vs errors",
+   "kernel trick maps to higher dimensions implicitly (RBF, polynomial)",
+   "scales poorly to very large datasets"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mla-013",
+  "category": "ML algorithms",
+  "difficulty": "easy",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How does K-Nearest Neighbours work, and what are its weaknesses?",
+  "key_points": [
+   "predict from the k closest training points (vote/average)",
+   "needs feature scaling",
+   "choice of k: small = noisy, large = smooth",
+   "slow at prediction time on big data",
+   "curse of dimensionality"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mla-014",
+  "category": "ML algorithms",
+  "difficulty": "easy",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Explain Naive Bayes and why it works well for text classification.",
+  "key_points": [
+   "Bayes' theorem with the 'naive' independence assumption between features",
+   "fast, needs little data",
+   "works well with bag-of-words / TF-IDF",
+   "Laplace smoothing for unseen words",
+   "probabilities poorly calibrated"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mla-015",
+  "category": "ML algorithms",
+  "difficulty": "easy",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How does K-means clustering work, and how do you choose k?",
+  "key_points": [
+   "assign points to nearest centroid, recompute centroids, repeat",
+   "sensitive to initialisation (k-means++) and scale",
+   "assumes roughly spherical clusters",
+   "choose k: elbow method, silhouette score, business sense",
+   "alternatives: DBSCAN for arbitrary shapes, GMM for soft clusters"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mla-016",
+  "category": "ML algorithms",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is PCA and when would you use it?",
+  "key_points": [
+   "linear dimensionality reduction to directions of max variance",
+   "eigenvectors of the covariance matrix / SVD",
+   "standardise features first",
+   "use for compression, visualisation, noise reduction, speeding up models",
+   "loses interpretability; t-SNE/UMAP for non-linear visualisation"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mla-017",
+  "category": "ML algorithms",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is the curse of dimensionality?",
+  "key_points": [
+   "data becomes sparse as dimensions grow",
+   "distances become less meaningful",
+   "needs exponentially more data",
+   "hurts KNN, clustering",
+   "fix: feature selection, PCA, regularisation, embeddings"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mla-018",
+  "category": "ML algorithms",
+  "difficulty": "easy",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Explain cross-validation. Why use k-fold instead of one train/test split?",
+  "key_points": [
+   "split data into k folds, train on k-1, test on 1, rotate",
+   "more reliable estimate with less variance",
+   "stratified k-fold for imbalanced classes",
+   "time-series: forward-chaining splits, never shuffle",
+   "keep a final hold-out test set untouched"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mla-019",
+  "category": "ML algorithms",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is ROC-AUC, and when is PR-AUC better?",
+  "key_points": [
+   "ROC: TPR vs FPR across thresholds",
+   "AUC = probability a random positive ranks above a random negative",
+   "threshold-independent",
+   "on heavily imbalanced data ROC looks optimistic; PR-AUC focuses on the positive class",
+   "pick the threshold from business cost"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mla-020",
+  "category": "ML algorithms",
+  "difficulty": "easy",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is a confusion matrix? Walk me through what each cell means.",
+  "key_points": [
+   "TP, FP, TN, FN",
+   "precision, recall, specificity derived from it",
+   "type I error = FP, type II = FN",
+   "which error is costlier depends on the business case"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mla-021",
+  "category": "ML algorithms",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How do you tune hyperparameters efficiently?",
+  "key_points": [
+   "grid search is exhaustive but slow",
+   "random search is usually better per compute",
+   "Bayesian optimisation (Optuna, Hyperopt)",
+   "early stopping, successive halving",
+   "always tune on validation folds, not the test set"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mla-022",
+  "category": "ML algorithms",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is feature engineering? Give examples that made a real difference.",
+  "key_points": [
+   "create informative inputs from raw data",
+   "encoding categoricals (one-hot, target encoding with care)",
+   "scaling, log transforms for skew",
+   "date/time features, aggregates, interactions",
+   "domain knowledge beats blind generation; avoid leakage"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mla-023",
+  "category": "ML algorithms",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How do you handle missing data?",
+  "key_points": [
+   "understand why it's missing (MCAR, MAR, MNAR)",
+   "drop only if few and random",
+   "impute: mean/median/mode, KNN, model-based",
+   "add a 'was missing' indicator",
+   "tree models like XGBoost handle missing natively"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "mla-024",
+  "category": "ML algorithms",
+  "difficulty": "easy",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What's the difference between supervised, unsupervised, semi-supervised and reinforcement learning?",
+  "key_points": [
+   "supervised: labelled inputs to outputs",
+   "unsupervised: find structure without labels (clustering, PCA)",
+   "semi-supervised: few labels + many unlabelled",
+   "reinforcement: agent learns from rewards by acting",
+   "self-supervised: labels from the data itself (how LLMs pretrain)"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "dlb-001",
+  "category": "Deep learning",
+  "difficulty": "easy",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How does a CNN work? Explain convolution, pooling and why CNNs suit images.",
+  "key_points": [
+   "convolution filters slide over the image to detect local patterns (edges -> shapes -> objects)",
+   "weight sharing: far fewer parameters than dense layers",
+   "pooling downsamples and adds some translation invariance",
+   "stacked layers build a feature hierarchy",
+   "ends with dense layers / global pooling for classification"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "dlb-002",
+  "category": "Deep learning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are stride, padding and receptive field in a CNN?",
+  "key_points": [
+   "stride: step size of the filter, larger = smaller output",
+   "padding ('same' vs 'valid') keeps spatial size / edge info",
+   "output size = (W - F + 2P)/S + 1",
+   "receptive field: input area one neuron sees, grows with depth",
+   "dilated convolutions grow it cheaply"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "dlb-003",
+  "category": "Deep learning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Explain residual connections (ResNet). Why did they matter?",
+  "key_points": [
+   "skip connection adds input to the block output: y = F(x) + x",
+   "fixes degradation/vanishing gradients in very deep nets",
+   "lets layers learn residuals; identity is easy",
+   "enabled 100+ layer networks",
+   "now standard, including in transformers"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "dlb-004",
+  "category": "Deep learning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How does backpropagation work?",
+  "key_points": [
+   "forward pass computes predictions and loss",
+   "backward pass applies the chain rule layer by layer",
+   "gradients of loss w.r.t. each weight",
+   "optimizer updates weights (SGD, Adam)",
+   "autograd frameworks do it automatically"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "dlb-005",
+  "category": "Deep learning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What are vanishing and exploding gradients, and how do you fix them?",
+  "key_points": [
+   "gradients shrink or blow up through many layers/time steps",
+   "sigmoid/tanh saturation causes vanishing",
+   "fixes: ReLU-family activations, good init (He/Xavier), batch/layer norm, residual connections",
+   "gradient clipping for exploding",
+   "LSTM/GRU gates for RNNs"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "dlb-006",
+  "category": "Deep learning",
+  "difficulty": "easy",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Compare activation functions: sigmoid, tanh, ReLU, GELU, softmax.",
+  "key_points": [
+   "sigmoid: 0-1, saturates, used for binary output",
+   "tanh: -1 to 1, zero-centred, still saturates",
+   "ReLU: fast, sparse, can 'die' (Leaky ReLU fixes)",
+   "GELU: smooth, used in transformers",
+   "softmax: turns logits into a probability distribution for multi-class"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "dlb-007",
+  "category": "Deep learning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What do batch normalisation and dropout do?",
+  "key_points": [
+   "batch norm normalises activations per mini-batch, stabilises and speeds training",
+   "layer norm normalises per sample (used in transformers)",
+   "dropout randomly zeroes neurons during training to reduce overfitting",
+   "both behave differently at train vs inference time",
+   "use model.eval() at inference"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "dlb-008",
+  "category": "Deep learning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "RNN vs LSTM vs GRU vs Transformer: how do they differ?",
+  "key_points": [
+   "RNN: processes sequence step by step, vanishing gradients on long sequences",
+   "LSTM: gates (input, forget, output) + cell state keep long-term memory",
+   "GRU: simpler 2-gate LSTM variant",
+   "transformer: self-attention over all tokens in parallel, better long-range, scales on GPUs",
+   "transformers dominate NLP now; RNNs still used for small/streaming tasks"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "dlb-009",
+  "category": "Deep learning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What loss functions would you use for regression, binary, multi-class and multi-label problems?",
+  "key_points": [
+   "regression: MSE, MAE, Huber",
+   "binary: binary cross-entropy (sigmoid)",
+   "multi-class: categorical cross-entropy (softmax)",
+   "multi-label: sigmoid + BCE per label",
+   "class weights / focal loss for imbalance"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "dlb-010",
+  "category": "Deep learning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How does object detection with YOLO work at a high level?",
+  "key_points": [
+   "single-stage detector: one forward pass",
+   "predicts bounding boxes, objectness and class scores on a grid/anchors",
+   "non-maximum suppression removes duplicate boxes",
+   "metrics: IoU and mAP",
+   "trade-off: speed vs accuracy compared with two-stage (Faster R-CNN)"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "dlb-011",
+  "category": "Deep learning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "Walk me through building an OCR pipeline for scanned documents.",
+  "key_points": [
+   "pre-processing: deskew, denoise, binarise, resize",
+   "text detection then recognition (Tesseract, or deep models like TrOCR/PaddleOCR)",
+   "layout analysis for tables/columns",
+   "post-processing: spell/regex validation, confidence thresholds",
+   "today: vision-language models for complex layouts; measure character/field accuracy"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "dlb-012",
+  "category": "Deep learning",
+  "difficulty": "easy",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is data augmentation, and why does it help?",
+  "key_points": [
+   "create varied training samples from existing ones",
+   "images: flips, crops, rotations, colour jitter",
+   "text: back-translation, synonym swap; audio: noise, time shift",
+   "reduces overfitting, improves robustness",
+   "must keep labels valid (e.g. don't flip digits like 6/9)"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "dlb-013",
+  "category": "Deep learning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How did NLP move from bag-of-words and Word2Vec to transformers?",
+  "key_points": [
+   "bag-of-words/TF-IDF: counts, no word order or meaning",
+   "Word2Vec/GloVe: dense static embeddings, one vector per word",
+   "RNN/LSTM added sequence context",
+   "transformers/BERT: contextual embeddings via attention",
+   "LLMs: scaled decoder transformers pretrained on huge text"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "dlb-014",
+  "category": "Deep learning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "How would you build a sentiment analysis model today, and how would you evaluate it?",
+  "key_points": [
+   "baseline: TF-IDF + logistic regression",
+   "fine-tune a small transformer (DistilBERT/RoBERTa) for best accuracy",
+   "or zero/few-shot with an LLM for speed to market",
+   "handle sarcasm, domain language, class imbalance",
+   "evaluate: macro-F1, confusion matrix, error analysis on slices"
+  ],
+  "source": "curated"
+ },
+ {
+  "id": "dlb-015",
+  "category": "Deep learning",
+  "difficulty": "medium",
+  "tracks": [
+   "engineer",
+   "architect"
+  ],
+  "recent": false,
+  "q": "What is topic modeling? Compare LDA with embedding-based approaches like BERTopic.",
+  "key_points": [
+   "discover themes in a document collection without labels",
+   "LDA: documents are mixtures of topics, topics are word distributions",
+   "needs choosing number of topics, bag-of-words",
+   "BERTopic: embeddings + clustering (HDBSCAN) + class-based TF-IDF",
+   "evaluate with coherence scores and human review"
+  ],
+  "source": "curated"
  }
 ]

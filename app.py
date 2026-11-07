@@ -527,7 +527,7 @@ def iv_answer(iid: int, a: AnswerIn, u=Depends(current_user)):
                 difficulty=iv["difficulty"], category=t["category"], depth=depth,
                 key_points="; ".join(json.loads(t["key_points"] or "[]")) or "(use your judgement)")},
             {"role": "user", "content": f"QUESTION: {t['question']}\n\nCANDIDATE ANSWER:\n{a.answer}"}],
-            temperature=0.2)
+            temperature=0.2, max_tokens=3200)
     except llm.LLMError as e:
         raise HTTPException(503, str(e))
     try:
@@ -643,6 +643,13 @@ def iv_export(iid: int, u=Depends(current_user)):
                   f"**Question:** {t['question']}", "", f"**My answer:** {t['answer'] or ''}", ""]
         if fb.get("gaps"):
             lines += ["**Gaps:**"] + [f"- {g}" for g in fb["gaps"]] + [""]
+        if fb.get("mistakes"):
+            lines += ["**Corrections:**"] + [f"- I said: {m.get('said', '')} -> Actually: {m.get('correct', '')}"
+                                              for m in fb["mistakes"] if isinstance(m, dict)] + [""]
+        if fb.get("corrected_answer"):
+            lines += ["**My answer, corrected:**", fb["corrected_answer"], ""]
+        if fb.get("explanation"):
+            lines += ["**Explanation:**", fb["explanation"], ""]
         if fb.get("model_answer"):
             lines += ["**Model answer:**", fb["model_answer"], ""]
     return "\n".join(lines)
