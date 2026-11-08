@@ -86,6 +86,19 @@ class _Conn:
         return _Cur(cur)
 
 
+def executemany(conn_obj, sql, rows):
+    """Insert many rows in one go (one network round trip batch on Postgres)."""
+    rows = list(rows)
+    if not rows:
+        return
+    raw = conn_obj.raw
+    if PG:
+        with raw.cursor() as cur:
+            cur.executemany(sql.replace("?", "%s"), rows)
+    else:
+        raw.executemany(sql, rows)
+
+
 def _raw():
     if PG:
         return psycopg.connect(DATABASE_URL, row_factory=dict_row, connect_timeout=15)

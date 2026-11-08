@@ -79,10 +79,7 @@ def refresh_bank(trending_per_cat=0):
         if trending_per_cat:
             rq.trending(work, trending_per_cat)
         new = work[len(base):]
-        with db.conn() as c:
-            for q in new:
-                c.execute("INSERT INTO bank(id,data,added) VALUES(?,?,?) ON CONFLICT(id) DO NOTHING",
-                          (q["id"], json.dumps(q, ensure_ascii=False), time.time()))
+        _save_to_bank(new)
         db.set_setting("bank_refreshed", datetime.datetime.now().strftime("%d %b %Y, %H:%M"))
         db.set_setting("refresh_status", f"done: {len(new)} new questions")
     except Exception as e:
@@ -297,13 +294,14 @@ def admin_refresh_status(a=Depends(admin_user)):
 
 
 @app.post("/api/admin/import")
-async def admin_import(file: UploadFile = File(...), a=Depends(admin_user)):
-    """Import questions from a PDF/markdown/text file you own into your private bank (database only)."""
+def admin_import(file: UploadFile = File(...), a=Depends(admin_user)):
+    """Import questions from a PDF/markdown/text file you own into your private bank (database only).
+    A plain 'def' so FastAPI runs it in a worker thread: the server keeps answering health checks."""
     import importer
-    data = await file.read()
+    data = file.file.read()
     if len(data) > 15 * 1024 * 1024:
         raise HTTPException(400, "That file is over 15 MB.")
-    name = (file.filename or "upload").rsplit("/", 1)[-1][:80]
+    name = (file.filename or "upload").rsplit("/", 1)[-1].rsplit("\\", 1)[-1][:80]
     try:
         text = importer.pdf_text(data) if name.lower().endswith(".pdf") else data.decode("utf-8", "ignore")
     except Exception:
@@ -311,18 +309,22 @@ async def admin_import(file: UploadFile = File(...), a=Depends(admin_user)):
     qs = importer.parse(text, source=f"import: {name}")
     if not qs:
         raise HTTPException(400, "No questions found in that file.")
-    added = 0
-    with db.conn() as c:
-        for q in qs:
-            if c.execute("SELECT 1 FROM bank WHERE id=?", (q["id"],)).fetchone():
-                continue
-            c.execute("INSERT INTO bank(id,data,added) VALUES(?,?,?)", (q["id"], json.dumps(q, ensure_ascii=False), time.time()))
-            added += 1
-    _bank_cache["at"] = 0
+    added = _save_to_bank(qs)
     cats = {}
     for q in qs:
         cats[q["category"]] = cats.get(q["category"], 0) + 1
     return {"found": len(qs), "added": added, "categories": cats}
+
+
+def _save_to_bank(qs):
+    """Store new questions with one query for existing ids and one batched insert."""
+    with db.conn() as c:
+        have = {r["id"] for r in c.execute("SELECT id FROM bank").fetchall()}
+        new = [q for q in qs if q["id"] not in have]
+        db.executemany(c, "INSERT INTO bank(id,data,added) VALUES(?,?,?)",
+                       [(q["id"], json.dumps(q, ensure_ascii=False), time.time()) for q in new])
+    _bank_cache["at"] = 0
+    return len(new)
 
 
 class SettingsIn(BaseModel):
