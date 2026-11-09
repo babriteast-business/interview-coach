@@ -90,6 +90,14 @@ Copy-Item .env.example .env; notepad .env      # fill key + admin login
 ```
 Leave `DATABASE_URL` empty to use a local file, or paste the Neon string to see the same data as the website.
 
+## Tutorials
+
+The **Tutorials** button (top right of Home, also in the menu) opens your lessons. Each one is a written tutorial with numbered parts, code blocks you can copy, tables, diagrams and highlighted "Say this", "Tip", "Careful" and "Practice" boxes. Your reading position is remembered, and you can mark a lesson as done.
+
+- The lessons live in `tutorials/*.md` and load into your database automatically after each deploy. Edit a `.md` file and push to update that lesson.
+- To add a new one, open Tutorials → **Add tutorial** (admin only). Upload a PDF (it's turned into a written lesson automatically) or a Markdown file, then choose a title and a group.
+- To remove one, open it and use **Remove this tutorial** at the bottom.
+
 ## Good to know
 - **Free Render sleeps** after 15 minutes idle. The first visit after that takes about a minute to wake.
 - **Free OpenRouter limit**: 20 requests/minute and 50/day, shared by everyone on the site. One graded answer = 1 request; bank questions cost nothing. That's why other users get a daily cap.

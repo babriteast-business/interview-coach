@@ -302,3 +302,175 @@ input[type=file]::file-selector-button{font:700 14px var(--body);background:var(
 .explain h3{color:var(--gold);margin-bottom:8px}
 .explain .md{max-width:70ch}.explain .md p:first-child{margin-top:0}
 @media (max-width:900px){.fix{grid-template-columns:1fr}}
+
+/* ---------- tutorials ----------
+   Lessons read like a good docs site set in the studio palette:
+   gold = what you say in the interview, mint = what good looks like, coral = traps, violet = your turn. */
+:root{--violet:#A99CFF;--violet-wash:rgba(169,156,255,.13);--blue-note:#8FA4FF;--lesson-text:#E4E1FB}
+.home-top{display:flex;justify-content:flex-end;margin:-12px 0 4px}
+.tut-btn{display:flex;align-items:center;gap:10px;font:700 15px/1 var(--body);color:var(--paper);background:var(--ink-2);
+  border:2px solid var(--desk);border-radius:999px;padding:8px 10px 8px 14px;cursor:pointer;transition:border-color .15s,background .15s}
+.tut-btn:hover{border-color:var(--gold);background:var(--desk)}
+.tut-btn:active{transform:translateY(1px)}
+.tut-btn svg{width:18px;height:18px;color:var(--gold)}
+.tut-btn-n{font:500 12.5px/1 var(--mono);color:var(--gold);background:var(--gold-wash);padding:6px 9px;border-radius:999px;font-variant-numeric:tabular-nums}
+.tut-btn-n:empty{display:none}
+
+.tut-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+.tut-head .btn{margin-top:12px;flex-shrink:0}
+.tut-add{max-width:780px;margin-bottom:24px}
+.tut-add-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.tut-add-grid .span2{grid-column:1/-1}
+
+.tut-continue{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;background:var(--ink-2);
+  border:2px solid var(--desk);border-left:4px solid var(--gold);border-radius:var(--r-lg);padding:20px 24px;margin-bottom:28px}
+.tut-continue small{display:block;font:500 12.5px var(--mono);color:var(--gold);margin-bottom:6px}
+.tut-continue h2{font-size:26px;margin-bottom:6px}
+.tut-continue p{margin:0;color:var(--paper-dim);font-size:15px}
+.tut-continue .tut-bar{margin:14px 0 0;max-width:420px}
+
+.tut-filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.tut-chip{font:700 14px/1 var(--body);color:var(--paper-dim);background:transparent;border:2px solid var(--desk);border-radius:999px;
+  padding:9px 14px;cursor:pointer;display:flex;gap:8px;align-items:center;transition:border-color .15s,background .15s,color .15s}
+.tut-chip:hover{color:var(--paper);border-color:var(--line)}
+.tut-chip.active{background:var(--desk-2);border-color:var(--desk-2);color:var(--paper)}
+.tut-chip span{font:500 12px var(--mono);color:var(--paper-faint);font-variant-numeric:tabular-nums}
+
+.tut-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+.tut-tile{display:flex;flex-direction:column;gap:10px;text-align:left;font:inherit;color:inherit;background:var(--ink-2);
+  border:2px solid var(--desk);border-radius:var(--r-lg);padding:20px;cursor:pointer;transition:border-color .15s,background .15s}
+.tut-tile:hover{border-color:var(--gold)}
+.tut-top{display:flex;justify-content:space-between;gap:8px;font:500 12.5px var(--mono);color:var(--paper-faint);font-variant-numeric:tabular-nums}
+.tut-title{font:800 22px/1.15 var(--display);letter-spacing:-.01em}
+.tut-blurb{color:var(--paper-dim);font-size:14.5px;line-height:1.5;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* the tile's moment: a peek at the lesson's real contents */
+.tut-outline{list-style:none;margin:4px 0 0;padding:12px 14px;background:var(--ink);border-radius:12px;display:flex;flex-direction:column;gap:6px;flex:1}
+.tut-outline li{display:grid;grid-template-columns:24px 1fr;gap:8px;font-size:13.5px;line-height:1.35;color:var(--paper-dim)}
+.tut-outline li span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tut-outline b{font:500 12px/1.5 var(--mono);color:var(--gold);font-variant-numeric:tabular-nums}
+.tut-outline .more{display:block;font:500 12px var(--mono);color:var(--paper-faint);padding-left:32px}
+.tut-foot{display:flex;justify-content:space-between;gap:8px;font:500 12.5px var(--mono);color:var(--paper-faint);font-variant-numeric:tabular-nums}
+.tut-foot .reading{color:var(--gold)}.tut-foot .done{color:var(--mint)}
+.tut-bar{height:4px;border-radius:2px;background:var(--desk);overflow:hidden}
+.tut-bar i{display:block;height:100%;background:var(--gold);border-radius:2px}
+.tut-bar i.done{background:var(--mint)}
+
+/* ---------- lesson reader ---------- */
+.rd-bar{position:sticky;top:0;z-index:4;display:flex;align-items:center;gap:16px;background:var(--ink);
+  margin:-40px -48px 0;padding:14px 48px;border-bottom:2px solid var(--desk)}
+.rd-crumb{flex:1;min-width:0;display:flex;align-items:baseline;gap:10px}
+.rd-crumb span{font:500 12.5px var(--mono);color:var(--paper-faint);white-space:nowrap}
+.rd-crumb b{font:800 16px/1.2 var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rd-where{font:500 13px var(--mono);color:var(--paper-dim);white-space:nowrap;font-variant-numeric:tabular-nums}
+.rd-progress{position:absolute;left:0;right:0;bottom:-2px;height:2px}
+.rd-progress i{display:block;height:100%;width:0;background:var(--gold)}
+.rd-layout{display:grid;grid-template-columns:240px minmax(0,780px);gap:56px;margin-top:36px;align-items:start}
+.rd-toc{position:sticky;top:92px;max-height:calc(100vh - 116px);overflow-y:auto;display:flex;flex-direction:column;gap:2px;padding:0 4px 24px 0}
+.rd-toc h3{font:500 12.5px var(--mono);color:var(--paper-faint);margin:0 0 10px 12px}
+.rd-toc a{display:grid;grid-template-columns:26px 1fr;gap:6px;align-items:baseline;font-size:14px;line-height:1.4;color:var(--paper-dim);
+  text-decoration:none;border-radius:10px;padding:7px 10px;transition:background .15s,color .15s}
+.rd-toc a b{font:500 12px var(--mono);color:var(--paper-faint);font-variant-numeric:tabular-nums}
+.rd-toc a:hover{background:var(--ink-2);color:var(--paper)}
+.rd-toc a.active{background:var(--ink-2);color:var(--paper);box-shadow:inset 3px 0 0 var(--gold)}
+.rd-toc a.active b{color:var(--gold)}
+.toc-mobile{display:none}
+
+.lesson{min-width:0;color:var(--lesson-text);font-size:17px;line-height:1.75}
+.lesson-hero{padding-bottom:28px;margin-bottom:8px;border-bottom:2px solid var(--desk)}
+.lesson-eyebrow{font:500 13px var(--mono);color:var(--gold);margin-bottom:14px}
+.lesson-hero h1{font-size:clamp(36px,4.6vw,54px);letter-spacing:-.025em;line-height:1.02;margin:0 0 14px;color:var(--paper)}
+.lesson-tagline{font-size:20px;line-height:1.5;color:var(--paper-dim);margin:0 0 20px;max-width:46ch}
+.lesson-meta{display:flex;flex-wrap:wrap;gap:8px 20px;font:500 13px var(--mono);color:var(--paper-faint);font-variant-numeric:tabular-nums}
+.lesson-about{margin:16px 0 0;font-size:14px;line-height:1.6;color:var(--paper-faint);max-width:68ch}
+.lesson-body{counter-reset:sec}
+.lesson p{margin:0 0 18px;max-width:70ch}
+.lesson strong,.lesson b{color:var(--paper);font-weight:700}
+.lesson a{color:var(--gold);text-underline-offset:3px}
+.lesson h2{font-size:30px;line-height:1.2;color:var(--paper);margin:56px 0 18px;scroll-margin-top:96px}
+.lesson h2.sec::before{counter-increment:sec;content:counter(sec,decimal-leading-zero);font:500 15px var(--mono);color:var(--gold);margin-right:14px;vertical-align:4px}
+.lesson h2 code,.lesson h3 code{font-size:.6em;vertical-align:4px;padding:3px 8px;font-weight:500}
+.lesson h3{font-size:21px;line-height:1.25;color:var(--paper);margin:40px 0 12px;scroll-margin-top:96px}
+.lesson h3.sec::before{content:attr(data-n);font:500 13px var(--mono);color:var(--gold);margin-right:10px}
+.lesson h4{font:700 16px/1.4 var(--body);color:var(--gold);margin:28px 0 10px}
+.lesson-body>:first-child{margin-top:32px}
+.lesson ul,.lesson ol{margin:0 0 20px;padding-left:26px;max-width:68ch}
+.lesson li{margin:0 0 8px;padding-left:4px}
+.lesson li::marker{color:var(--gold);font-family:var(--mono);font-size:.85em}
+.lesson code{font-family:var(--mono);font-size:.84em;background:var(--desk);color:#F3EEFF;padding:2px 7px;border-radius:6px;overflow-wrap:anywhere}
+/* code */
+.code-block{margin:6px 0 24px;border:2px solid var(--desk);border-radius:14px;background:#120F33;overflow:hidden}
+.code-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px 8px 16px;border-bottom:2px solid var(--desk)}
+.code-head span{font:500 12px var(--mono);color:var(--paper-faint)}
+.code-copy{font:700 13px/1 var(--body);color:var(--paper-dim);background:transparent;border:2px solid var(--desk);border-radius:999px;padding:6px 12px;cursor:pointer;transition:color .15s,border-color .15s}
+.code-copy:hover{color:var(--paper);border-color:var(--line)}
+.code-copy.ok{color:var(--mint);border-color:var(--mint)}
+.code-block pre{margin:0;border:none;border-radius:0;background:none;padding:16px 18px;font-size:13.5px;line-height:1.65;color:#E9E6FF}
+.code-block pre code{background:none;padding:0;font-size:inherit;color:inherit;overflow-wrap:normal}
+/* tables */
+.table-wrap{margin:6px 0 26px;border:2px solid var(--desk);border-radius:14px;overflow-x:auto}
+.lesson table{width:100%;border-collapse:collapse;font-size:15px;line-height:1.5}
+.lesson th{text-align:left;background:var(--desk);color:var(--paper);font:700 14px/1.4 var(--body);padding:11px 14px;white-space:nowrap}
+.lesson td{padding:11px 14px;border-top:1px solid var(--desk);vertical-align:top;color:var(--lesson-text)}
+.lesson tbody tr:nth-child(even) td{background:rgba(42,36,112,.28)}
+.lesson td code{font-size:.82em}
+/* callouts */
+.callout{margin:8px 0 24px;padding:16px 20px;border-left:4px solid var(--c);background:var(--cw);border-radius:0 14px 14px 0;max-width:72ch}
+.callout-label{display:block;font:800 15px/1.2 var(--display);color:var(--c);margin-bottom:6px}
+.callout p{margin:0 0 10px}.callout p:last-child{margin:0}
+.callout.say{--c:var(--gold);--cw:var(--gold-wash)}
+.callout.say p{font-size:18px;line-height:1.7;color:var(--paper)}
+.callout.tip{--c:var(--mint);--cw:var(--mint-wash)}
+.callout.warn{--c:var(--coral);--cw:var(--coral-wash)}
+.callout.task{--c:var(--violet);--cw:var(--violet-wash)}
+.callout.key{--c:var(--gold);--cw:transparent;border:2px dashed rgba(255,201,74,.45);border-radius:14px}
+.callout.key p{font:600 18px/1.55 var(--display);color:var(--paper)}
+.callout.note{--c:var(--paper-faint);--cw:rgba(185,180,230,.07)}
+/* diagrams */
+.dg{margin:8px 0 26px;padding:16px;border:2px solid var(--desk);border-radius:16px;background:rgba(18,15,51,.55)}
+.dg-flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px}
+.dg-flow .dg-node{flex:1 1 96px;max-width:240px}
+.dg-arrow{display:flex;align-items:center;color:var(--paper-faint);font:500 18px var(--mono)}
+.dg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.dg-node{background:var(--ink-2);border:2px solid var(--tc,var(--desk));border-radius:14px;padding:12px 14px}
+.dg-node b{display:block;font:800 16px/1.25 var(--display);color:var(--paper)}
+.dg-node span{display:block;margin-top:4px;font-size:13.5px;line-height:1.45;color:var(--paper-dim)}
+.dg-node.t-red{--tc:rgba(255,90,122,.6)}.dg-node.t-blue{--tc:rgba(143,164,255,.55)}.dg-node.t-green{--tc:rgba(79,227,193,.55)}
+.dg-node.t-yellow,.dg-node.t-orange{--tc:rgba(255,201,74,.6)}
+.dg-notes{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px 18px}
+.dg-notes li{font:500 13px/1.5 var(--mono);color:var(--paper-dim);padding-left:16px;position:relative}
+.dg-notes li::before{content:"";position:absolute;left:0;top:.7em;width:8px;height:2px;background:var(--gold);border-radius:1px}
+/* end of lesson */
+.lesson-end{margin-top:56px;padding-top:28px;border-top:2px solid var(--desk);display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.end-card{background:var(--ink-2);border:2px solid var(--desk);border-radius:var(--r-lg);padding:20px;display:flex;flex-direction:column;gap:10px;align-items:flex-start;
+  text-align:left;font:inherit;color:inherit}
+.end-card small{font:500 12.5px var(--mono);color:var(--paper-faint)}
+.end-card h3{margin:0;font-size:20px}
+button.end-card{cursor:pointer;transition:border-color .15s}
+button.end-card:hover{border-color:var(--gold)}
+#rd-done.is-done{background:var(--mint);border-color:var(--mint);color:var(--ink)}
+.rd-admin{margin-top:16px}
+.rd-error{max-width:60ch;margin:40px 0;color:var(--paper-dim)}
+
+@media (max-width:1100px){.rd-layout{grid-template-columns:200px minmax(0,1fr);gap:36px}}
+@media (max-width:900px){
+  .home-top{margin:0 0 8px}
+  .tut-head{flex-direction:column;gap:0;margin-bottom:20px}
+  .tut-head .btn{margin-top:0}
+  .tut-add-grid{grid-template-columns:1fr}
+  .tut-continue{grid-template-columns:1fr;gap:16px}
+  .tut-grid{grid-template-columns:1fr;gap:14px}
+  .rd-bar{position:static;margin:-24px -16px 0;padding:12px 16px;gap:10px}
+  .rd-crumb span{display:none}
+  .rd-layout{grid-template-columns:1fr;margin-top:24px}
+  .rd-toc{display:none}
+  .toc-mobile{display:block;margin:20px 0 0;background:var(--ink-2);border:2px solid var(--desk);border-radius:14px;padding:12px 16px}
+  .toc-mobile summary{font-weight:700;color:var(--paper)}
+  .toc-mobile a{display:block;padding:6px 0;color:var(--paper-dim);text-decoration:none;font-size:15px}
+  .toc-mobile a b{font:500 12px var(--mono);color:var(--gold);margin-right:8px}
+  .lesson{font-size:16.5px}
+  .lesson h2{font-size:25px;margin-top:44px}
+  .lesson h3{font-size:19px}
+  .callout{padding:14px 16px}
+  .lesson-end{grid-template-columns:1fr}
+  .dg-flow .dg-node{max-width:none}
+}

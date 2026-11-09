@@ -38,12 +38,25 @@ CREATE TABLE IF NOT EXISTS messages(id {ID}, thread_id INTEGER, role TEXT, conte
 CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY, value TEXT);
 CREATE TABLE IF NOT EXISTS bank(id TEXT PRIMARY KEY, data TEXT, added {TS});
 CREATE TABLE IF NOT EXISTS ai_usage(user_id INTEGER, day TEXT, n INTEGER, PRIMARY KEY(user_id, day));
+CREATE TABLE IF NOT EXISTS tutorials(
+  id TEXT PRIMARY KEY, title TEXT, grp TEXT, blurb TEXT, pages INTEGER, toc TEXT, sort INTEGER, size INTEGER, added {TS},
+  content TEXT, tagline TEXT, about TEXT, words INTEGER, src TEXT, hash TEXT);
+CREATE TABLE IF NOT EXISTS tutorial_progress(
+  user_id INTEGER, tid TEXT, page INTEGER, max_page INTEGER, done INTEGER DEFAULT 0, updated {TS},
+  PRIMARY KEY(user_id, tid));
 """
 # columns added after v1 (for existing local databases)
 MIGRATIONS = [
     "ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'",
     "ALTER TABLE users ADD COLUMN status TEXT DEFAULT 'pending'",
     "ALTER TABLE users ADD COLUMN trusted INTEGER DEFAULT 0",
+    # tutorials became written lessons (an earlier build stored PDFs)
+    "ALTER TABLE tutorials ADD COLUMN content TEXT",
+    "ALTER TABLE tutorials ADD COLUMN tagline TEXT",
+    "ALTER TABLE tutorials ADD COLUMN about TEXT",
+    "ALTER TABLE tutorials ADD COLUMN words INTEGER",
+    "ALTER TABLE tutorials ADD COLUMN src TEXT",
+    "ALTER TABLE tutorials ADD COLUMN hash TEXT",
 ]
 ID_TABLES = {"users", "interviews", "turns", "code_runs", "threads", "messages"}
 

@@ -139,7 +139,9 @@ function go(view) {
   $$(".view").forEach((v) => v.classList.add("hidden"));
   $(`#view-${view}`).classList.remove("hidden");
   $$(".desk nav a").forEach((a) => a.classList.toggle("active", a.dataset.view === view || (["room", "report"].includes(view) && a.dataset.view === "setup")));
-  ({ dashboard: loadDashboard, coding: loadProblems, coach: loadThreads, history: loadHistory, profile: loadProfile, admin: loadAdmin }[view] || (() => {}))();
+  if (view !== "reader") closeReader();
+  $$(".desk nav a").forEach((a) => { if (view === "reader" && a.dataset.view === "tutorials") a.classList.add("active"); });
+  ({ dashboard: loadDashboard, coding: loadProblems, coach: loadThreads, history: loadHistory, profile: loadProfile, admin: loadAdmin, tutorials: loadTutorials }[view] || (() => {}))();
   window.scrollTo(0, 0);
 }
 $$(".desk nav a").forEach((a) => (a.onclick = (e) => { e.preventDefault(); go(a.dataset.view); }));
@@ -147,6 +149,7 @@ $$("[data-view-link]").forEach((b) => (b.onclick = () => go(b.dataset.viewLink))
 
 // ---------------- home ----------------
 async function loadDashboard() {
+  api("/api/tutorials").then((d) => ($("#tut-count").textContent = d.tutorials.length || "")).catch(() => {});
   const s = await api("/api/stats");
   $("#st-answered").textContent = s.answered || 0;
   $("#st-avg").textContent = s.average ?? "–";
@@ -549,3 +552,247 @@ $("#ad-save").onclick = async () => {
 };
 
 boot().catch((e) => toast(e.message));
+
+// ---------------- tutorials ----------------
+const tut = { list: [], groups: [], filter: "All", cur: null, heads: [], page: 0, saveT: null, pending: null };
+const pad2 = (n) => String(n).padStart(2, "0");
+const tutPct = (t) => (t.done ? 100 : t.sections ? Math.round((t.max_page / t.sections) * 100) : 0);
+const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : "");
+function tutStatus(t) {
+  if (t.done) return `<span class="done">Done</span>`;
+  if (t.page) return `<span class="reading">Part ${t.page} of ${t.sections}</span>`;
+  return `<span>Not started</span>`;
+}
+
+async function loadTutorials() {
+  $("#tut-add-toggle").classList.toggle("hidden", state.meta?.role !== "admin");
+  try {
+    await tut.pending; tut.pending = null;
+    const d = await api("/api/tutorials");
+    tut.list = d.tutorials; tut.groups = d.groups;
+  } catch (e) { $("#tut-grid").innerHTML = `<p class="empty">${esc(e.message)}</p>`; return; }
+  $("#ta-group").innerHTML = tut.groups.map((g) => `<option>${esc(g)}</option>`).join("");
+  renderTutorials();
+}
+function renderTutorials() {
+  const L = tut.list;
+  if (!L.length) {
+    $("#tut-filters").innerHTML = ""; $("#tut-continue").innerHTML = "";
+    $("#tut-grid").innerHTML = `<p class="empty">No tutorials yet. ${state.meta?.role === "admin" ? "Use Add tutorial to upload your first one." : "Your admin hasn't added any."}</p>`;
+    return;
+  }
+  const last = L.filter((t) => t.page && !t.done).sort((a, b) => b.updated - a.updated)[0];
+  $("#tut-continue").innerHTML = last ? `<div class="tut-continue">
+      <div><small>Pick up where you left off</small><h2>${esc(last.title)}</h2>
+        <p>Part ${last.page} of ${last.sections}${last.section ? ` · ${esc(last.section)}` : ""}</p>
+        <div class="tut-bar"><i style="width:${tutPct(last)}%"></i></div></div>
+      <div><button class="btn gold" data-open="${esc(last.id)}">Resume</button></div></div>` : "";
+  const counts = {};
+  L.forEach((t) => (counts[t.group] = (counts[t.group] || 0) + 1));
+  const groups = ["All", ...tut.groups.filter((g) => counts[g])];
+  if (!groups.includes(tut.filter)) tut.filter = "All";
+  $("#tut-filters").innerHTML = groups.map((g) => `<button class="tut-chip${g === tut.filter ? " active" : ""}" role="tab" aria-selected="${g === tut.filter}" data-group="${esc(g)}">
+    ${esc(g)}<span>${g === "All" ? L.length : counts[g]}</span></button>`).join("");
+  const shown = tut.filter === "All" ? L : L.filter((t) => t.group === tut.filter);
+  $("#tut-grid").innerHTML = shown.map((t) => `<button class="tut-tile" data-open="${esc(t.id)}">
+      <span class="tut-top"><span>${esc(t.group)}</span><span>${t.minutes} min read</span></span>
+      <span class="tut-title">${esc(t.title)}</span>
+      ${t.blurb ? `<p class="tut-blurb">${esc(t.blurb)}</p>` : ""}
+      <ol class="tut-outline">${t.outline.map((s, i) => `<li><b>${pad2(i + 1)}</b><span>${esc(s)}</span></li>`).join("")}
+        ${t.sections > t.outline.length ? `<li class="more">+${t.sections - t.outline.length} more parts</li>` : ""}</ol>
+      <span class="tut-foot"><span>${t.sections} parts</span>${tutStatus(t)}</span>
+      <span class="tut-bar" aria-hidden="true"><i class="${t.done ? "done" : ""}" style="width:${tutPct(t)}%"></i></span></button>`).join("");
+}
+$("#tut-filters").addEventListener("click", (e) => { const b = e.target.closest("[data-group]"); if (b) { tut.filter = b.dataset.group; renderTutorials(); } });
+$("#view-tutorials").addEventListener("click", (e) => { const b = e.target.closest("[data-open]"); if (b) openTutorial(b.dataset.open); });
+$("#tut-add-toggle").onclick = () => $("#tut-add").classList.toggle("hidden");
+$("#tut-add").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const f = $("#ta-file").files[0]; if (!f) return;
+  const fd = new FormData();
+  fd.append("file", f); fd.append("title", $("#ta-title").value); fd.append("group", $("#ta-group").value); fd.append("blurb", $("#ta-blurb").value);
+  busy($("#ta-save"), true, "Turning it into a lesson"); $("#ta-status").textContent = "";
+  try {
+    const r = await fetch("/api/admin/tutorials", { method: "POST", body: fd });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.detail || `Upload failed (${r.status})`);
+    $("#ta-status").textContent = `Added: ${d.sections} parts, about ${Math.max(1, Math.round(d.words / 200))} min read.`;
+    e.target.reset(); await loadTutorials();
+  } catch (err) { $("#ta-status").textContent = err.message; }
+  busy($("#ta-save"), false);
+});
+
+// ---- lesson rendering ----
+const CALLOUT_KIND = { "say this": "say", "teach it back": "say", "interview": "say", "my take": "say", "say": "say",
+  tip: "tip", expected: "tip", remember: "tip", "key idea": "key", "real output": "tip", why: "tip", check: "tip",
+  careful: "warn", warning: "warn", important: "warn",
+  practice: "task", task: "task", "try it": "task", "your turn": "task", note: "note" };
+function diagramHtml(kind, body) {
+  const items = body.split("\n").map((l) => l.trim()).filter(Boolean).map((l) => {
+    const m = l.match(/^(\w+):\s*(.*)$/); const tone = m ? m[1] : "plain"; const rest = m ? m[2] : l;
+    const [title, ...det] = rest.split(" | ");
+    return { tone, title, det: det.join(" | ") };
+  });
+  const boxes = items.filter((n) => n.tone !== "note"), notes = items.filter((n) => n.tone === "note");
+  const node = (n) => `<div class="dg-node t-${esc(n.tone)}"><b>${esc(n.title)}</b>${n.det ? `<span>${esc(n.det)}</span>` : ""}</div>`;
+  const inner = kind === "flow" ? boxes.map(node).join(`<span class="dg-arrow" aria-hidden="true">→</span>`) : boxes.map(node).join("");
+  const cls = kind === "flow" || kind === "steps" ? "dg-flow" : "dg-grid";
+  const ann = notes.length ? `<ul class="dg-notes">${notes.map((n) => `<li>${esc(n.title)}${n.det ? ` — ${esc(n.det)}` : ""}</li>`).join("")}</ul>` : "";
+  return `<figure class="dg"><div class="${cls}">${inner}</div>${ann}</figure>`;
+}
+function slug(s, used) {
+  let b = "p-" + (s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "part"), k = b, i = 2;
+  while (used.has(k)) k = `${b}-${i++}`;
+  used.add(k); return k;
+}
+function renderLesson(text) {
+  // our diagram blocks become HTML before Markdown runs
+  const src = text.replace(/```diagram (\w+)\n([\s\S]*?)```/g, (_, k, body) => "\n" + diagramHtml(k, body) + "\n");
+  const html = window.marked ? DOMPurify.sanitize(marked.parse(src)) : md(src);
+  const box = document.createElement("div");
+  box.className = "lesson-body";
+  box.innerHTML = html;
+  // callouts: a quote that starts with a bold label
+  box.querySelectorAll("blockquote").forEach((q) => {
+    const first = q.querySelector("p > strong:first-child");
+    const m = first && first.textContent.match(/^([^:]{2,24}):?$/);
+    const label = m ? m[1].trim() : "";
+    const key = label.toLowerCase().replace(/\s*\[.*?\]\s*/g, "").trim();
+    const kind = CALLOUT_KIND[key] || (label && label === label.toUpperCase() ? "note" : null);
+    const div = document.createElement("div");
+    div.className = `callout ${kind || "note"}`;
+    if (kind) {
+      first.remove();
+      const lab = document.createElement("span");
+      lab.className = "callout-label"; lab.textContent = cap(label.toLowerCase());
+      div.appendChild(lab);
+      const p = q.querySelector("p"); if (p) p.innerHTML = p.innerHTML.replace(/^\s+/, "");
+    }
+    while (q.firstChild) div.appendChild(q.firstChild);
+    q.replaceWith(div);
+  });
+  // code blocks get a header with the language and a copy button
+  box.querySelectorAll("pre > code").forEach((c) => {
+    const pre = c.parentElement, lang = ([...c.classList].find((x) => x.startsWith("language-")) || "").replace("language-", "");
+    const wrap = document.createElement("div");
+    wrap.className = "code-block";
+    wrap.innerHTML = `<div class="code-head"><span>${esc({ bash: "Terminal", powershell: "PowerShell", python: "Python", json: "JSON", yaml: "YAML" }[lang] || lang || "Code")}</span><button class="code-copy" type="button">Copy</button></div>`;
+    pre.replaceWith(wrap); wrap.appendChild(pre);
+  });
+  box.querySelectorAll("table").forEach((tb) => { const w = document.createElement("div"); w.className = "table-wrap"; tb.replaceWith(w); w.appendChild(tb); });
+  box.querySelectorAll("a[href^='http']").forEach((a) => { a.target = "_blank"; a.rel = "noopener"; });
+  // sections: ## headings, or ### when the lesson has only one or two ##
+  const used = new Set();
+  box.querySelectorAll("h2,h3").forEach((h) => (h.id = slug(h.textContent, used)));
+  const h2 = [...box.querySelectorAll("h2")], h3 = [...box.querySelectorAll("h3")];
+  const heads = h2.length >= 3 ? h2 : h3.length > h2.length ? h3 : h2;
+  heads.forEach((h, i) => {
+    h.classList.add("sec"); h.dataset.n = pad2(i + 1);
+    // the counter numbers parts, so drop the notes' own "1." / "A3." prefixes
+    const first = h.firstChild;
+    if (first && first.nodeType === 3) first.textContent = first.textContent.replace(/^\s*[A-Z]?\d{1,2}[.)]\s+/, "");
+  });
+  return { box, heads };
+}
+$("#rd-article").addEventListener("click", (e) => {
+  const b = e.target.closest(".code-copy");
+  if (!b) return;
+  const code = b.closest(".code-block").querySelector("code").innerText;
+  navigator.clipboard?.writeText(code).then(() => { b.textContent = "Copied"; b.classList.add("ok"); setTimeout(() => { b.textContent = "Copy"; b.classList.remove("ok"); }, 1400); });
+});
+
+async function openTutorial(id) {
+  closeReader();
+  go("reader");
+  const art = $("#rd-article");
+  art.innerHTML = `<p class="empty">Opening the lesson<span class="dots"></span></p>`;
+  $("#rd-toc").innerHTML = ""; $("#rd-where").textContent = "";
+  try {
+    const t = await api(`/api/tutorials/${encodeURIComponent(id)}`);
+    tut.cur = t; tut.page = 0;
+    $("#rd-crumb-group").textContent = t.group; $("#rd-crumb-title").textContent = t.title;
+    const { box, heads } = renderLesson(t.content);
+    tut.heads = heads;
+    const toc = heads.map((h, i) => `<a href="#${h.id}" data-i="${i + 1}"><b>${pad2(i + 1)}</b><span>${esc(h.textContent)}</span></a>`).join("");
+    art.innerHTML = `<header class="lesson-hero">
+        <div class="lesson-eyebrow">${esc(t.group)}</div>
+        <h1>${esc(t.title)}</h1>
+        ${t.tagline ? `<p class="lesson-tagline">${esc(cap(t.tagline))}</p>` : t.blurb ? `<p class="lesson-tagline">${esc(t.blurb)}</p>` : ""}
+        <div class="lesson-meta"><span>${t.minutes} min read</span><span>${heads.length} parts</span>${t.done ? "<span>Done</span>" : ""}</div>
+        ${t.about ? `<p class="lesson-about">${esc(t.about)}</p>` : ""}
+        ${heads.length ? `<details class="toc-mobile"><summary>In this lesson</summary>${toc}</details>` : ""}
+      </header>`;
+    art.appendChild(box);
+    art.insertAdjacentHTML("beforeend", `<footer class="lesson-end">
+        <div class="end-card"><small>Finished reading?</small><h3>Explain it out loud next</h3>
+          <button class="btn small" id="rd-done">Mark as done</button></div>
+        ${t.next ? `<button class="end-card" id="rd-next" data-id="${esc(t.next.id)}"><small>Next lesson · ${esc(t.next.group)}</small><h3>${esc(t.next.title)}</h3></button>`
+          : `<button class="end-card" id="rd-next-all"><small>That was the last one</small><h3>Back to all tutorials</h3></button>`}
+      </footer>
+      ${state.meta?.role === "admin" ? `<div class="rd-admin"><button class="btn ghost small" id="rd-remove">Remove this tutorial</button></div>` : ""}`);
+    $("#rd-toc").innerHTML = heads.length ? `<h3>In this lesson</h3>${toc}` : "";
+    setDone(t.done);
+    $("#rd-done").onclick = () => { const d = !tut.cur?.done; saveProgress(d); if (d) toast("Marked as done. Now explain it in a mock interview.", 3500); };
+    $("#rd-next") && ($("#rd-next").onclick = (e) => openTutorial(e.currentTarget.dataset.id));
+    $("#rd-next-all") && ($("#rd-next-all").onclick = () => go("tutorials"));
+    $("#rd-remove") && ($("#rd-remove").onclick = removeTutorial);
+    if (t.page > 1 && heads[t.page - 1]) {
+      heads[t.page - 1].scrollIntoView({ block: "start" });
+      toast(`Back at part ${t.page}: ${heads[t.page - 1].textContent}`, 2600);
+    } else window.scrollTo(0, 0);
+    trackLesson();
+  } catch (e) {
+    art.innerHTML = `<div class="rd-error"><p>Couldn't open this lesson. ${esc(e.message || "")}</p><button class="btn" id="rd-retry">Try again</button></div>`;
+    $("#rd-retry").onclick = () => openTutorial(id);
+  }
+}
+function trackLesson() {
+  if (!tut.cur) return;
+  const heads = tut.heads, line = window.innerHeight * 0.3;
+  let cur = 0;
+  for (let i = 0; i < heads.length; i++) { if (heads[i].getBoundingClientRect().top <= line) cur = i + 1; else break; }
+  const doc = document.documentElement, max = doc.scrollHeight - window.innerHeight;
+  const pct = max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 100;
+  $("#rd-progress").style.width = `${pct}%`;
+  $("#rd-where").textContent = heads.length ? (cur ? `Part ${cur} of ${heads.length}` : `${heads.length} parts`) : "";
+  $$("#rd-toc a").forEach((a) => a.classList.toggle("active", +a.dataset.i === cur));
+  if (cur && cur !== tut.page) {
+    tut.page = cur;
+    clearTimeout(tut.saveT);
+    tut.saveT = setTimeout(() => saveProgress(), 1200);
+  }
+}
+async function saveProgress(done) {
+  const t = tut.cur; if (!t) return;
+  try {
+    const r = await api(`/api/tutorials/${encodeURIComponent(t.id)}/progress`, { method: "PUT", body: { page: Math.max(1, tut.page), ...(done === undefined ? {} : { done }) } });
+    t.done = r.done; if (tut.cur === t) setDone(r.done);
+  } catch (e) { /* progress is a convenience; reading carries on */ }
+}
+function setDone(d) { const b = $("#rd-done"); if (!b) return; b.classList.toggle("is-done", d); b.textContent = d ? "Done ✓" : "Mark as done"; }
+let lessonRaf = 0;
+window.addEventListener("scroll", () => {
+  if ($("#view-reader").classList.contains("hidden") || lessonRaf) return;
+  lessonRaf = requestAnimationFrame(() => { lessonRaf = 0; trackLesson(); });
+}, { passive: true });
+document.addEventListener("click", (e) => {
+  const a = e.target.closest("#rd-toc a, .toc-mobile a");
+  if (!a) return;
+  e.preventDefault();
+  document.getElementById(a.getAttribute("href").slice(1))?.scrollIntoView({ block: "start", behavior: reduceMotion ? "auto" : "smooth" });
+  a.closest("details")?.removeAttribute("open");
+});
+$("#rd-back").onclick = () => go("tutorials");
+async function removeTutorial() {
+  if (!tut.cur) return;
+  const b = $("#rd-remove");
+  if (b.dataset.armed !== "1") { b.dataset.armed = "1"; b.textContent = "Click again to remove it for everyone"; setTimeout(() => { b.dataset.armed = ""; b.textContent = "Remove this tutorial"; }, 4000); return; }
+  await api(`/api/admin/tutorials/${encodeURIComponent(tut.cur.id)}`, { method: "DELETE" });
+  tut.cur = null; toast("Tutorial removed"); go("tutorials");
+}
+function closeReader() {
+  if (!tut.cur) return;
+  clearTimeout(tut.saveT);
+  if (tut.page) tut.pending = saveProgress();
+  tut.cur = null; tut.heads = [];
+}

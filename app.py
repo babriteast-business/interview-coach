@@ -15,7 +15,7 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(BASE, ".env"))
 
 import uvicorn  # noqa: E402
-from fastapi import Depends, FastAPI, File, HTTPException, Request, Response, UploadFile  # noqa: E402
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile  # noqa: E402
 from fastapi.responses import FileResponse, PlainTextResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
@@ -24,6 +24,7 @@ import db  # noqa: E402
 import llm  # noqa: E402
 import prompts  # noqa: E402
 import runner  # noqa: E402
+import tutorials  # noqa: E402
 
 DATA = os.path.join(BASE, "data")
 COOKIE = "ic_session"
@@ -824,6 +825,78 @@ def coach_export(tid: int, u=Depends(current_user)):
     for msg in d["messages"]:
         out += [("## Me" if msg["role"] == "user" else "## Coach"), msg["content"], ""]
     return "\n".join(out)
+
+
+# ---------------- tutorials ----------------
+def _seed_tutorials():
+    try:
+        tutorials.seed()
+    except Exception as e:
+        print(f"  Tutorials not loaded: {e}")
+
+
+threading.Thread(target=_seed_tutorials, daemon=True).start()
+
+
+class ProgressIn(BaseModel):
+    page: int
+    done: bool | None = None
+
+
+@app.get("/api/tutorials")
+def tutorials_list(u=Depends(current_user)):
+    return {"tutorials": tutorials.listing(u["user_id"]), "groups": tutorials.GROUPS}
+
+
+@app.get("/api/tutorials/{tid}")
+def tutorial_get(tid: str, u=Depends(current_user)):
+    d = tutorials.detail(tid, u["user_id"])
+    if not d:
+        raise HTTPException(404, "That tutorial isn't here any more.")
+    return d
+
+
+@app.put("/api/tutorials/{tid}/progress")
+def tutorial_progress(tid: str, p: ProgressIn, u=Depends(current_user)):
+    d = tutorials.detail(tid, u["user_id"])
+    if not d:
+        raise HTTPException(404, "That tutorial isn't here any more.")
+    return tutorials.save_progress(u["user_id"], tid, max(1, min(p.page, max(1, d["sections"]))), p.done)
+
+
+@app.post("/api/admin/tutorials")
+def admin_tutorial_add(file: UploadFile = File(...), title: str = Form(""), group: str = Form("Other"),
+                       blurb: str = Form(""), a=Depends(admin_user)):
+    name = file.filename or "tutorial"
+    ext = os.path.splitext(name)[1].lower()
+    data = file.file.read()
+    if len(data) > tutorials.MAX_MB * 1024 * 1024:
+        raise HTTPException(400, f"That file is over {tutorials.MAX_MB} MB.")
+    meta = {}
+    try:
+        if ext == ".pdf":
+            if not data.startswith(b"%PDF"):
+                raise ValueError("that file isn't a readable PDF")
+            meta, md = tutorials.from_pdf(data)
+        elif ext in (".md", ".markdown", ".txt"):
+            meta, md = tutorials.parse_md(data.decode("utf-8", "ignore"))
+        else:
+            raise ValueError("upload a PDF or a Markdown (.md) file")
+    except Exception as e:
+        raise HTTPException(400, f"Couldn't read that file: {e}")
+    if len(md.split()) < 30:
+        raise HTTPException(400, "Couldn't find enough text in that file to make a lesson.")
+    title = (title.strip() or meta.get("title") or re.sub(r"[-_]+", " ", os.path.splitext(name)[0]).strip().title())[:120]
+    group = group if group in tutorials.GROUPS else (meta.get("group") if meta.get("group") in tutorials.GROUPS else "Other")
+    r = tutorials.save(tutorials.slugify(title), title, group, (blurb.strip() or meta.get("blurb", ""))[:240], md,
+                       meta.get("tagline", ""), meta.get("about", ""))
+    return {"ok": True, **r}
+
+
+@app.delete("/api/admin/tutorials/{tid}")
+def admin_tutorial_delete(tid: str, a=Depends(admin_user)):
+    tutorials.remove(tid)
+    return {"ok": True}
 
 
 # ---------------- website ----------------
